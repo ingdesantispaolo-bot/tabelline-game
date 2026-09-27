@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Matemagica - L'Avventura delle Tabelline & Calcoli</title>
+    
+    <!-- PWA & Mobile Meta Tags -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0b0f19">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Matemagica">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%231e1b4b'/><text y='70' font-size='60' x='20'>✨</text></svg>">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%231e1b4b'/><text y='70' font-size='60' x='20'>✨</text></svg>">
+
+    <!-- Google Fonts: Fredoka & Nunito -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700;800;900&family=Nunito:wght@600;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="dark-theme">
+
+    <!-- Sfondo con bolle animate / galassia -->
+    <div class="bg-decorations">
+        <div class="floating-bubble bubble-1"></div>
+        <div class="floating-bubble bubble-2"></div>
+        <div class="floating-bubble bubble-3"></div>
+    </div>
+
+    <!-- Header Superiore -->
+    <header class="app-header">
+        <div class="logo-container" id="header-logo" title="Torna alla Home">
+            <div class="logo-icon">✨</div>
+            <div class="logo-text">
+                <h1>MATEMAGICA</h1>
+                <span>Tabelline & Calcoli</span>
+            </div>
+        </div>
+
+        <div class="header-controls">
+            <div class="badge-stat" id="header-stars-badge" title="Stelle Totali Guadagnate">
+                <span class="star-icon">⭐</span>
+                <span id="header-stars-count">0</span>
+            </div>
+
+            <button class="btn-icon" id="btn-toggle-theme" title="Tema Chiaro / Scuro">☀️</button>
+            <button class="btn-icon" id="btn-open-share" title="Pubblica / Condividi Online">🌐</button>
+            <button class="btn-icon" id="btn-toggle-fullscreen" title="Schermo Intero (Tablet / PC)">⛶</button>
+            <button class="btn-icon" id="btn-view-trophies" title="I Miei Trofei">🏆</button>
+            <button class="btn-icon" id="btn-toggle-sound" title="Suono On/Off">🔊</button>
+        </div>
+    </header>
+
+    <!-- Contenitore Principale Schermi -->
+    <main class="app-container">
+
+        <!-- =================== 1. SCHERMO HOME =================== -->
+        <section id="screen-home" class="screen active">
+            <div class="home-hero">
+                <div class="hero-avatar-picker">
+                    <span class="avatar-display" id="user-avatar-display" title="Tocca per cambiare personaggio">🚀</span>
+                    <span class="avatar-picker-label">Tocca per scegliere avatar</span>
+                </div>
+                <h2 class="hero-title">Pronto a diventare un Mago dei Numeri?</h2>
+                <p class="hero-subtitle">Allena la tua mente, padroneggia i trucchi del calcolo rapido e scala tutti i livelli!</p>
+            </div>
+
+            <div class="home-modes-grid">
+                <!-- Modalità Accademia dei Trucchi (AAA Highlight) -->
+                <div class="mode-card academy" id="btn-mode-academy">
+                    <div class="mode-badge">★ Ingegneria Mentale</div>
+                    <div class="mode-icon">🧠</div>
+                    <h2>Accademia dei Trucchi</h2>
+                    <p>I segreti matematici per calcolare a mente in 2 secondi: per 11, quadrati del 5, basi 100 e percentuali lampo!</p>
+                    <button class="btn-play-card">Esplora Trucchi ➔</button>
+                </div>
+
+                <!-- Modalità Avventura -->
+                <div class="mode-card adventure" id="btn-mode-adventure">
+                    <div class="mode-badge">Classico</div>
+                    <div class="mode-icon">🗺️</div>
+                    <h2>Avventura a Livelli</h2>
+                    <p>Una scalata di 15 tappe: dalle tabelline base fino alla Lega dei Grandi Maghi del Calcolo Complesso!</p>
+                    <button class="btn-play-card">Inizia il Viaggio ➔</button>
+                </div>
+
+                <!-- Modalità Palestra -->
+                <div class="mode-card gym" id="btn-mode-gym">
+                    <div class="mode-badge">Libero</div>
+                    <div class="mode-icon">🏋️‍♂️</div>
+                    <h2>Palestra Libera</h2>
+                    <p>Scegli tu quale tabellina ripassare senza ansia da tempo, con l'aiuto visivo a pallini.</p>
+                    <button class="btn-play-card">Apri Palestra ➔</button>
+                </div>
+
+                <!-- Modalità Sfida Rapida -->
+                <div class="mode-card challenge" id="btn-mode-challenge">
+                    <div class="mode-badge">Veloce</div>
+                    <div class="mode-icon">⚡</div>
+                    <h2>Sfida a Tempo Boss</h2>
+                    <p>20 calcoli a raffica: metti alla prova i tuoi riflessi per battere il tuo record personale!</p>
+                    <button class="btn-play-card">Sfida il Timer ➔</button>
+                </div>
+            </div>
+
+            <!-- Statistiche Home -->
+            <div class="home-footer-stats">
+                <div class="stat-item">
+                    <div class="stat-num" id="home-stat-stars">0</div>
+                    <div class="stat-label">Stelle Raccolte</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-num" id="home-stat-solved">0</div>
+                    <div class="stat-label">Calcoli Risolti</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-num" id="home-stat-trophies">0</div>
+                    <div class="stat-label">Trofei Sbloccati</div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- =================== SCHERMO ACCADEMIA DEI TRUCCHI (MENTAL MATH AAA) =================== -->
+        <section id="screen-academy" class="screen">
+            <div class="screen-header-bar">
+                <button class="btn-back" id="btn-back-academy">⬅ Home</button>
+                <h2 class="screen-title">🧠 Accademia del Calcolo Rapido</h2>
+                <div style="width: 80px;"></div>
+            </div>
+
+            <div class="academy-hero">
+                <div class="academy-hero-badge">Accademia Ingegneristica del Calcolo Mentale</div>
+                <h2 class="academy-hero-title">I Segreti dei Grandi Calcolatori</h2>
+                <p class="academy-hero-desc">Non serve essere calcolatrici umane: basta conoscere le proprietà algebriche giuste! Esplora ciascun trucco, prova il simulatore dal vivo e allenati con round mirati.</p>
+                
+                <div class="academy-filters-row">
+                    <button class="btn-filter-pill active" data-filter="all">Tutti i Trucchi (8)</button>
+                    <button class="btn-filter-pill" data-filter="moltiplicazioni">Moltiplicazioni</button>
+                    <button class="btn-filter-pill" data-filter="quadrati">Quadrati & Simmetrie</button>
+                    <button class="btn-filter-pill" data-filter="divisioni">Divisioni & %</button>
+                </div>
+            </div>
+
+            <div class="academy-tricks-grid" id="academy-tricks-grid">
+                <!-- 1. Moltiplicazione per 11 -->
+                <div class="trick-card" data-category="moltiplicazioni" id="card-trick-11">
+                    <div class="trick-card-header">
+                        <span class="trick-badge">⚡ 2 Secondi</span>
+                        <div class="trick-icon">⚡</div>
+                        <h3 class="trick-name">Moltiplicazione per 11 (Cifre Aperte)</h3>
+                        <p class="trick-tagline">Calcola ad esempio <strong>43 × 11 = 473</strong> o <strong>78 × 11 = 858</strong> all'istante!</p>
+                    </div>
+                    <div class="trick-body">
+                        <div class="trick-section">
+                            <h4 class="trick-sect-title">💡 Come Funziona la Regola</h4>
+                            <p class="trick-text">Separa la decina e l'unità del numero da moltiplicare, e inserisci al centro la loro <strong>somma</strong>! Se la somma supera 9, aggiungi 1 di riporto alla prima cifra.</p>
+                        </div>
+                        <div class="trick-section math-proof">
+                            <h4 class="trick-sect-title">📐 Dimostrazione Algebrica</h4>
+                            <code>(10a + b) × 11 = 10a(10 + 1) + b(10 + 1) = 100a + 10(a + b) + b</code>
+                        </div>
+                        <!-- Simulatore Interattivo -->
+                        <div class="trick-interactive-box">
+                            <div class="sim-controls">
+                                <label for="sim-input-11">Numero (10-99):</label>
+                                <input type="number" id="sim-input-11" value="43" min="10" max="99" class="sim-num-input">
+                                <button class="btn-sim-calc" id="btn-calc-11">Calcola</button>
+                                <button class="btn-sim-rnd" id="btn-rnd-11" title="Esempio a caso">🎲</button>
+                            </div>
+                            <div class="sim-result-view" id="sim-result-11"></div>
+                        </div>
+                        <button class="btn-train-trick" data-trick="11"><span>🚀 Allenati sul Trucco dell'11</span></button>
+                    </div>
+                </div>
+
+                <!-- 2. Quadrati che terminano per 5 -->
+                <div class="trick-card" data-category="quadrati" id="card-trick-square5">
+                    <div class="trick-card-header">
+                        <span class="trick-badge">🔥 Istantaneo</span>
+                        <div class="trick-icon">🔥</div>
+                        <h3 class="trick-name">Quadrati con finale 5 (N5²)</h3>
+                        <p class="trick-tagline">Calcola <strong>35² = 1225</strong>, <strong>75² = 5625</strong>, <strong>95² = 9025</strong> in 1 secondo!</p>
+                    </div>
+                    <div class="trick-body">
+                        <div class="trick-section">
+                            <h4 class="trick-sect-title">💡 Come Funziona la Regola</h4>
+                            <p class="trick-text">Prendi la cifra prima del 5 (la decina <strong>n</strong>), moltiplicala per il suo successivo <strong>(n + 1)</strong>, e accoda sempre <strong>25</strong> alla fine! Es: per 35², 3 × 4 = 12, poi 25 → 1225.</p>
+                        </div>
+                        <div class="trick-section math-proof">
+                            <h4 class="trick-sect-title">📐 Dimostrazione Algebrica</h4>
+                            <code>(10n + 5)² = 100n² + 100n + 25 = 100n(n + 1) + 25</code>
+                        </div>
+                        <div class="trick-interactive-box">
+                            <div class="sim-controls">
+                                <label for="sim-input-sq5">Numero (termina in 5):</label>
+                                <input type="number" id="sim-input-sq5" value="35" step="10" min="15" max="115" class="sim-num-input">
+                                <button class="btn-sim-calc" id="btn-calc-sq5">Calcola</button>
+                                <button class="btn-sim-rnd" id="btn-rnd-sq5" title="Esempio a caso">🎲</button>
+                            </div>
+                            <div class="sim-result-view" id="sim-result-sq5"></div>
+                        </div>
+                        <button class="btn-train-trick" data-trick="square5"><span>🚀 Allenati sui Quadrati del 5</span></button>
+                    </div>
+                </div>
+
+                <!-- 3. Metodo Vedico (Base 100) -->
+                <div class="trick-card" data-category="moltiplicazioni" id="card-trick-base100">
+                    <div class="trick-card-header">
+                        <span class="trick-badge">🪐 Metodo Vedico</span>
+                        <div class="trick-icon">🪐</div>
+                        <h3 class="trick-name">Moltiplicazione Base 100</h3>
+                        <p class="trick-tagline">Moltiplica numeri vicini a 100: <strong>96 × 94 = 9024</strong> o <strong>104 × 107 = 11128</strong>!</p>
+                    </div>
+                    <div class="trick-body">
+                        <div class="trick-section">
+                            <h4 class="trick-sect-title">💡 Come Funziona la Regola</h4>
+                            <p class="trick-text">Calcola gli scarti da 100 (es. per 96 è -4, per 94 è -6). Sottrai a croce: 96 - 6 = <strong>90</strong>. Moltiplica gli scarti: 4 × 6 = <strong>24</strong>. Unisci le due parti → <strong>9024</strong>!</p>
+                        </div>
+                        <div class="trick-section math-proof">
+                            <h4 class="trick-sect-title">📐 Dimostrazione Algebrica</h4>
+                            <code>(100 - a)(100 - b) = 10000 - 100(a + b) + ab = 100(100 - a - b) + ab</code>
+                        </div>
+                        <div class="trick-interactive-box">
+                            <div class="sim-controls">
+                                <input type="number" id="sim-input-b100-a" value="96" min="80" max="115" class="sim-num-input small">
+                                <span>×</span>
+                                <input type="number" id="sim-input-b100-b" value="94" min="80" max="115" class="sim-num-input small">
+                                <button class="btn-sim-calc" id="btn-calc-b100">Calcola</button>
+                                <button class="btn-sim-rnd" id="btn-rnd-b100">🎲</button>
+                            </div>
+                            <div class="sim-result-view" id="sim-result-b100"></div>
+                        </div>
+                        <button class="btn-train-trick" data-trick="base100"><span>🚀 Allenati sul Metodo Vedico</span></button>
+                    </div>
+                </div>
+
+                <!-- 4. Prodotti Notoveli a² - b² -->
+                <div class="trick-card" data-category="quadrati" id="card-trick-diff-squares">
+                    <div class="trick-card-header">
+                        <span class="trick-badge">💎 Prodotti Notevoli</span>
+                        <div class="trick-icon">💎</div>
+                        <h3 class="trick-name">Simmetria attorno a una Decina (a² - b²)</h3>
+                        <p class="trick-tagline">Calcola <strong>49 × 51 = 2499</strong>, <strong>38 × 42 = 1596</strong>, <strong>76 × 84 = 6384</strong>!</p>
+                    </div>
+                    <div class="trick-body">
+                        <div class="trick-section">
+                            <h4 class="trick-sect-title">💡 Come Funziona la Regola</h4>
+                            <p class="trick-text">Se due numeri sono alla stessa distanza <em>d</em> da un tondo centrale <em>c</em>: calcola il quadrato del centro meno il quadrato della distanza! Es: 38 × 42 = 40² - 2² = 1600 - 4 = 1596.</p>
+                        </div>
+                        <div class="trick-section math-proof">
+                            <h4 class="trick-sect-title">📐 Dimostrazione Algebrica</h4>
+                            <code>(c - d)(c + d) = c² - d²</code>
+                        </div>
+                        <div class="trick-interactive-box">
+                            <div class="sim-controls">
+                                <input type="number" id="sim-input-diff-a" value="38" min="10" max="95" class="sim-num-input small">
+                                <span>×</span>
+                                <input type="number" id="sim-input-diff-b" value="42" min="10" max="95" class="sim-num-input small">
+                                <button class="btn-sim-calc" id="btn-calc-diff">Calcola</button>
+                                <button class="btn-sim-rnd" id="btn-rnd-diff">🎲</button>
+                            </div>
+                            <div class="sim-result-view" id="sim-result-diff"></div>
+                        </div>
+                        <button class="btn-train-trick" data-trick="diff_squares"><span>🚀 Allenati su a² - b²</span></button>
+                    </div>
+                </div>
+
+                <!-- 5. Raddoppia e Dimezza -->
+                <div class="trick-card" data-category="moltiplicazioni" id="card-trick-double-halve">
+                    <div class="trick-card-header">
+                        <span class="trick-badge">⚖️ Scomposizione</span>
+                        <div class="trick-icon">⚖️</div>
+                        <h3 class="trick-name">Raddoppia e Dimezza (Double & Halve)</h3>
+                        <p class="trick-tagline">Calcola <strong>24 × 15 = 360</strong>, <strong>18 × 25 = 450</strong>, <strong>16 × 35 = 560</strong>!</p>
+                    </div>
+                    <div class="trick-body">
+                        <div class="trick-section">
+                            <h4 class="trick-sect-title">💡 Come Funziona la Regola</h4>
+                            <p class="trick-text">Moltiplicare un numero dispari (specie se termina con 5) per uno pari? Dimezza il pari e raddoppia il 5! 24 × 15 diventa 12 × 30 = 360. Fatto in un battito di ciglia!</p>
+                        </div>
+                        <div class="trick-section math-proof">
+                            <h4 class="trick-sect-title">📐 Dimostrazione Algebrica</h4>
+                            <code>A × B = (A / 2) × (2 × B)</code>
+                        </div>
+                        <div class="trick-interactive-box">
+                            <div class="sim-controls">
+                                <input type="number" id="sim-input-dh-a" value="24" min="8" max="80" class="sim-num-input small">
+                                <span>×</span>
+                                <input type="number" id="sim-input-dh-b" value="15" min="5" max="85" class="sim-num-input small">
+                                <button class="btn-sim-calc" id="btn-calc-dh">Calcola</button>
+                                <button class="btn-sim-rnd" id="btn-rnd-dh">🎲</button>
+                            </div>
+                            <div class="sim-result-view" id="sim-result-dh"></div>
+                        </div>
+                        <button class="btn-train-trick" data-trick="double_halve"><span>🚀 Allenati su Raddoppia & Dimezza</span></button>
+                    </div>
+                </div>
+
+                <!-- 6. Regola del 9 e 99 -->
+                <div class="trick-card" data-category="moltiplicazioni" id="card-trick-nine">
+                    <div class="trick-card-header">
+                        <span class="trick-badge">🪄 Complemento</span>
+                        <div class="trick-icon">🪄</div>
+                        <h3 class="trick-name">La Regola del 9 e 99</h3>
+                        <p class="trick-tagline">Calcola <strong>47 × 99 = 4653</strong> o <strong>68 × 9 = 612</strong> a mente!</p>
+                    </div>
+                    <div class="trick-body">
+                        <div class="trick-section">
+                            <h4 class="trick-sect-title">💡 Come Funziona la Regola</h4>
+                            <p class="trick-text">Invece di moltiplicare per 9 o 99, moltiplica per 10 o 100 (basta aggiungere zeri!) e poi sottrai il numero stesso una volta. Es: 47 × 99 = 4700 - 47 = 4653.</p>
+                        </div>
+                        <div class="trick-section math-proof">
+                            <h4 class="trick-sect-title">📐 Dimostrazione Algebrica</h4>
+                            <code>N × 99 = N × (100 - 1) = 100N - N</code>
+                        </div>
+                        <div class="trick-interactive-box">
+                            <div class="sim-controls">
+                                <input type="number" id="sim-input-nine-n" value="47" min="10" max="99" class="sim-num-input">
+                                <span>× 99</span>
+                                <button class="btn-sim-calc" id="btn-calc-nine">Calcola</button>
+                                <button class="btn-sim-rnd" id="btn-rnd-nine">🎲</button>
+                            </div>
+                            <div class="sim-result-view" id="sim-result-nine"></div>
+                        </div>
+                        <button class="btn-train-trick" data-trick="nine"><span>🚀 Allenati sulla Regola del 99</span></button>
+                    </div>
+                </div>
+
+                <!-- 7. Percentuali Inverse -->
+                <div class="trick-card" data-category="divisioni" id="card-trick-percent">
+                    <div class="trick-card-header">
+                        <span class="trick-badge">🎯 Percentuali Lampo</span>
+                        <div class="trick-icon">🎯</div>
+                        <h3 class="trick-name">Percentuali Inverse (X% di Y = Y% di X)</h3>
+                        <p class="trick-tagline">Calcola <strong>16% di 25 = 4</strong> o <strong>18% di 50 = 9</strong> all'istante!</p>
+                    </div>
+                    <div class="trick-body">
+                        <div class="trick-section">
+                            <h4 class="trick-sect-title">💡 Come Funziona la Regola</h4>
+                            <p class="trick-text">Scambia i due numeri! Calcolare il 16% di 25 sembra difficile, ma il 25% di 16 è semplicemente un quarto di 16 → 4! Lo scambio è sempre valido al 100%.</p>
+                        </div>
+                        <div class="trick-section math-proof">
+                            <h4 class="trick-sect-title">📐 Dimostrazione Algebrica</h4>
+                            <code>(X × Y) / 100 = (Y × X) / 100</code>
+                        </div>
+                        <div class="trick-interactive-box">
+                            <div class="sim-controls">
+                                <input type="number" id="sim-input-pct-x" value="16" min="2" max="90" class="sim-num-input small">
+                                <span>% di</span>
+                                <input type="number" id="sim-input-pct-y" value="25" min="10" max="100" class="sim-num-input small">
+                                <button class="btn-sim-calc" id="btn-calc-pct">Calcola</button>
+                                <button class="btn-sim-rnd" id="btn-rnd-pct">🎲</button>
+                            </div>
+                            <div class="sim-result-view" id="sim-result-pct"></div>
+                        </div>
+                        <button class="btn-train-trick" data-trick="percent"><span>🚀 Allenati sulle Percentuali</span></button>
+                    </div>
+                </div>
+
+                <!-- 8. Divisioni Rapide per 5 e 25 -->
+                <div class="trick-card" data-category="divisioni" id="card-trick-div5-25">
+                    <div class="trick-card-header">
+                        <span class="trick-badge">⚡ Divisione Flash</span>
+                        <div class="trick-icon">⚡</div>
+                        <h3 class="trick-name">Divisioni Rapide per 5 e 25</h3>
+                        <p class="trick-tagline">Calcola <strong>340 ÷ 5 = 68</strong> o <strong>750 ÷ 25 = 30</strong> in 2 secondi!</p>
+                    </div>
+                    <div class="trick-body">
+                        <div class="trick-section">
+                            <h4 class="trick-sect-title">💡 Come Funziona la Regola</h4>
+                            <p class="trick-text">Per dividere per 5: raddoppia il numero e togli uno zero (dividi per 10). Per dividere per 25: quadruplica il numero e togli due zeri (dividi per 100)!</p>
+                        </div>
+                        <div class="trick-section math-proof">
+                            <h4 class="trick-sect-title">📐 Dimostrazione Algebrica</h4>
+                            <code>N ÷ 5 = (2N) ÷ 10 ; N ÷ 25 = (4N) ÷ 100</code>
+                        </div>
+                        <div class="trick-interactive-box">
+                            <div class="sim-controls">
+                                <input type="number" id="sim-input-div-n" value="340" min="20" max="990" class="sim-num-input">
+                                <select id="sim-select-div-d" class="sim-select">
+                                    <option value="5">÷ 5</option>
+                                    <option value="25">÷ 25</option>
+                                </select>
+                                <button class="btn-sim-calc" id="btn-calc-div">Calcola</button>
+                                <button class="btn-sim-rnd" id="btn-rnd-div">🎲</button>
+                            </div>
+                            <div class="sim-result-view" id="sim-result-div"></div>
+                        </div>
+                        <button class="btn-train-trick" data-trick="div5_25"><span>🚀 Allenati sulle Divisioni Flash</span></button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- =================== 2. SCHERMO MAPPA DEI LIVELLI =================== -->
+        <section id="screen-levels" class="screen">
+            <div class="screen-header-bar">
+                <button class="btn-back" id="btn-back-levels">⬅ Home</button>
+                <h2 class="screen-title">Mappa dell'Avventura</h2>
+                <div style="width: 80px;"></div>
+            </div>
+
+            <div class="levels-scroll-container">
+                <div class="levels-grid" id="levels-grid-container">
+                    <!-- Popolato dinamicamente da game.js -->
+                </div>
+            </div>
+        </section>
+
+
+        <!-- =================== 3. SCHERMO PALESTRA ALLENAMENTO =================== -->
+        <section id="screen-gym" class="screen">
+            <div class="screen-header-bar">
+                <button class="btn-back" id="btn-back-gym">⬅ Home</button>
+                <h2 class="screen-title">Palestra Matematica</h2>
+                <div style="width: 80px;"></div>
+            </div>
+
+            <div class="gym-container">
+                <h3 class="gym-section-title">🔢 1. Seleziona le Tabelline da allenare:</h3>
+                <div class="tables-selector-grid" id="tables-grid-selector">
+                    <!-- Popolato dinamicamente 1-12 -->
+                </div>
+
+                <div class="gym-options-row">
+                    <div class="gym-option-group">
+                        <h4 class="gym-section-title">⚡ 2. Operazione:</h4>
+                        <div class="option-buttons-group">
+                            <button class="btn-option btn-gym-op active" data-op="×">Moltiplicazione (×)</button>
+                            <button class="btn-option btn-gym-op" data-op="÷">Divisione (÷)</button>
+                            <button class="btn-option btn-gym-op" data-op="mix">Miste (× e ÷)</button>
+                        </div>
+                    </div>
+
+                    <div class="gym-option-group">
+                        <h4 class="gym-section-title">🎯 3. Numero di Domande:</h4>
+                        <div class="option-buttons-group">
+                            <button class="btn-option btn-gym-dur active" data-dur="10">10 Domande</button>
+                            <button class="btn-option btn-gym-dur" data-dur="20">20 Domande</button>
+                            <button class="btn-option btn-gym-dur" data-dur="30">30 Domande</button>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn-start-gym" id="btn-start-gym-workout">
+                    <span>🚀 Comincia l'Allenamento</span>
+                </button>
+            </div>
+        </section>
+
+
+        <!-- =================== 4. SCHERMO GAMEPLAY (ARENA TABLET) =================== -->
+        <section id="screen-gameplay" class="screen">
+            <!-- HUD Superiore -->
+            <div class="game-hud">
+                <div class="hud-lives" id="hud-lives-container">
+                    <span class="heart-life">❤️</span>
+                    <span class="heart-life">❤️</span>
+                    <span class="heart-life">❤️</span>
+                </div>
+
+                <div class="hud-progress-info">
+                    <span class="hud-question-counter" id="hud-counter-text">1 / 10</span>
+                </div>
+
+                <div class="hud-score-combo">
+                    <span class="hud-combo-badge" id="hud-combo-tag" style="display: none;">🔥 COMBO x2!</span>
+                    <span class="hud-score" id="hud-score-val">0</span>
+                </div>
+            </div>
+
+            <!-- Barra del Tempo per la domanda -->
+            <div class="timer-container" id="game-timer-bar">
+                <div class="timer-fill" id="timer-fill-bar"></div>
+            </div>
+
+            <!-- Area di gioco suddivisa: Domanda & Tastierino -->
+            <div class="game-play-area">
+                <!-- Pannello Domanda -->
+                <div class="question-panel">
+                    <div class="equation-display">
+                        <span class="operand" id="eq-num1">7</span>
+                        <span class="operator" id="eq-op">×</span>
+                        <span class="operand" id="eq-num2">8</span>
+                        <span>=</span>
+                        <div class="input-box placeholder" id="input-answer-box"></div>
+                    </div>
+
+                    <button class="btn-visual-help" id="btn-open-help">
+                        <span id="help-btn-label">💡 Aiuto & Trucco Magico</span>
+                    </button>
+
+                    <!-- Floating Score / XP Popups -->
+                    <div class="floating-score-container" id="floating-score-container"></div>
+
+                    <!-- Feedback visivo animato (Correct / Wrong) -->
+                    <div class="feedback-flash" id="feedback-flash"></div>
+                </div>
+
+                <!-- Tastierino Numerico Ottimizzato Tablet -->
+                <div class="numpad-panel">
+                    <div class="numpad-grid">
+                        <button class="num-btn" data-val="1">1</button>
+                        <button class="num-btn" data-val="2">2</button>
+                        <button class="num-btn" data-val="3">3</button>
+
+                        <button class="num-btn" data-val="4">4</button>
+                        <button class="num-btn" data-val="5">5</button>
+                        <button class="num-btn" data-val="6">6</button>
+
+                        <button class="num-btn" data-val="7">7</button>
+                        <button class="num-btn" data-val="8">8</button>
+                        <button class="num-btn" data-val="9">9</button>
+
+                        <button class="num-btn clear" data-val="back" title="Cancella">⌫</button>
+                        <button class="num-btn" data-val="0">0</button>
+                        <button class="num-btn submit" data-val="enter" title="Invia Risposta">✔</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- =================== 5. SCHERMO RISULTATI / VITTORIA =================== -->
+        <section id="screen-results" class="screen">
+            <div class="results-card">
+                <div class="results-stars-row">
+                    <span class="result-star" id="res-star-1">★</span>
+                    <span class="result-star" id="res-star-2">★</span>
+                    <span class="result-star" id="res-star-3">★</span>
+                </div>
+
+                <h2 class="results-title" id="res-title">Ottimo Lavoro!</h2>
+                <p class="results-subtitle" id="res-subtitle">Hai completato il livello con successo!</p>
+
+                <div class="results-stats-grid">
+                    <div class="res-stat-item">
+                        <div class="res-stat-val" id="res-score">1250</div>
+                        <div class="res-stat-lbl">Punti</div>
+                    </div>
+                    <div class="res-stat-item">
+                        <div class="res-stat-val" id="res-accuracy">100%</div>
+                        <div class="res-stat-lbl">Precisione</div>
+                    </div>
+                    <div class="res-stat-item">
+                        <div class="res-stat-val" id="res-combo">x5</div>
+                        <div class="res-stat-lbl">Combo Max</div>
+                    </div>
+                </div>
+
+                <!-- Box errori da rivedere se presenti -->
+                <div class="mistakes-box" id="res-mistakes-box" style="display: none;">
+                    <div class="mistakes-title">
+                        <span>📝 Calcoli da ripassare:</span>
+                    </div>
+                    <div class="mistakes-list" id="res-mistakes-list">
+                        <!-- Popolato dinamicamente -->
+                    </div>
+                </div>
+
+                <div class="results-buttons-row">
+                    <button class="btn-res-action retry" id="btn-res-retry">🔄 Rigioca</button>
+                    <button class="btn-res-action next" id="btn-res-next">Avanti ➔</button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- =================== MODALE AIUTO VISIVO & TRUCCHI =================== -->
+    <div class="modal-overlay" id="modal-visual-help">
+        <div class="modal-content modal-help-content">
+            <div class="help-modal-badge" id="help-modal-badge">💡 AIUTO DIDATTICO</div>
+            <h3 class="modal-title" id="help-modal-title">Come funziona il calcolo?</h3>
+            <p id="help-modal-desc" style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.4;"></p>
+            
+            <!-- Vista A: Griglia di pallini per tabelline -->
+            <div class="visual-dot-grid" id="help-modal-grid"></div>
+
+            <!-- Vista B: Step-by-Step scomposizione per calcoli complessi -->
+            <div class="trick-help-view" id="help-modal-trick-view" style="display: none;"></div>
+
+            <div>
+                <button class="btn-close-modal" id="btn-close-help">Ho Capito! 👍</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- =================== MODALE TROFEI =================== -->
+    <div class="modal-overlay" id="modal-trophies">
+        <div class="modal-content">
+            <h3 class="modal-title">🏆 Bacheca dei Trofei</h3>
+            <p style="color: var(--text-muted); font-size: 0.9rem;">Sblocca tutti i trofei dimostrando le tue abilità matematiche!</p>
+            
+            <div class="trophies-grid" id="trophies-modal-grid">
+                <!-- Popolato dinamicamente -->
+            </div>
+
+            <div style="margin-top: 16px; display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;">
+                <button class="btn-close-modal" id="btn-close-trophies">Chiudi</button>
+                <button id="btn-reset-progress" style="background: #fee2e2; border: 2px solid #fca5a5; color: #b91c1c; padding: 10px 18px; border-radius: var(--radius-full); font-weight: 800; cursor: pointer; font-family: inherit;">Azzera Dati 🔄</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- =================== MODALE PUBBLICAZIONE ONLINE =================== -->
+    <div class="modal-overlay" id="modal-share">
+        <div class="modal-content modal-share-content">
+            <h3 class="modal-title">🌐 Pubblica & Gioca Online Gratis</h3>
+            <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 16px;">Scegli il modo più comodo per pubblicare il gioco o aprirlo sul tuo tablet e smartphone:</p>
+            
+            <div class="share-options-list">
+                <div class="share-opt-card">
+                    <div class="share-opt-icon">⚡</div>
+                    <div class="share-opt-info">
+                        <h4>Opzione 1: Vercel (1-Click Deployment)</h4>
+                        <p>Server globale ultra-rapido, HTTPS gratuito e link permanente (es. <code>matemagica.vercel.app</code>).</p>
+                        <span class="share-badge-tag">Consigliato: Doppio click su <strong>pubblica_su_vercel.bat</strong></span>
+                    </div>
+                </div>
+
+                <div class="share-opt-card">
+                    <div class="share-opt-icon">🐙</div>
+                    <div class="share-opt-info">
+                        <h4>Opzione 2: GitHub Pages (Gratis per sempre)</h4>
+                        <p>Carica la cartella su una repository GitHub e attiva <strong>GitHub Pages</strong> dalle impostazioni del repository in 1 minuto.</p>
+                        <span class="share-badge-tag">Guida completa nel file <strong>PUBBLICAZIONE_ONLINE.md</strong></span>
+                    </div>
+                </div>
+
+                <div class="share-opt-card">
+                    <div class="share-opt-icon">📱</div>
+                    <div class="share-opt-info">
+                        <h4>Opzione 3: Link Immediato su Mobile (Tunnel Live)</h4>
+                        <p>Genera subito un link HTTPS da aprire al volo sul tuo telefono o tablet senza creare account.</p>
+                        <span class="share-badge-tag">Doppio click su <strong>condividi_link_immediato.bat</strong></span>
+                    </div>
+                </div>
+
+                <div class="share-opt-card">
+                    <div class="share-opt-icon">📲</div>
+                    <div class="share-opt-info">
+                        <h4>Installa come App Nativa su Tablet/Smartphone (PWA)</h4>
+                        <p>Una volta aperto il link su Safari (iPad/iPhone) o Chrome (Android), tocca <strong>"Condividi" -> "Aggiungi a schermata Home"</strong> per giocare a schermo intero anche 100% offline!</p>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top: 18px; display: flex; justify-content: center;">
+                <button class="btn-close-modal" id="btn-close-share">Chiudi</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script Audio, Effetti e Gioco -->
+    <script src="audio.js"></script>
+    <script src="confetti.js"></script>
+    <script src="game.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js').catch(err => console.warn('SW err:', err));
+            });
+        }
+    </script>
+</body>
+</html>

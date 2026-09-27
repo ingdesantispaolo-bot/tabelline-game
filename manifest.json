@@ -1,0 +1,17 @@
+{
+  "name": "Matemagica - L'Avventura delle Tabelline & Calcoli",
+  "short_name": "Matemagica",
+  "description": "App didattica AAA di calcolo mentale rapido e tabelline per tablet e mobile",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0b0f19",
+  "theme_color": "#0b0f19",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%231e1b4b'/><text y='70' font-size='60' x='20'>✨</text></svg>",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}
