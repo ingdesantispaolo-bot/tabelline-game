@@ -172,7 +172,129 @@ const TROPHIES = [
     { id: 'maratona_50', name: 'Cento di Questi Calcoli', icon: '🏅', desc: 'Risolvi oltre 50 calcoli totali con successo' }
 ];
 
-const AVATARS = ['🚀', '🧙‍♂️', '🦊', '🤖', '⭐', '🦖', '🦄', '🐱'];
+const AVATAR_CATALOG = [
+    {
+        id: 'astronaut',
+        name: 'Astronauta Cosmico',
+        icon: '🚀',
+        title: 'Esploratore delle Galassie Numeriche',
+        rarity: 'starter',
+        reqStars: 0,
+        desc: 'Sempre pronto al decollo verso nuove orbite matematiche.'
+    },
+    {
+        id: 'pythagoras',
+        name: 'Mago Pitagora',
+        icon: '🧙‍♂️',
+        title: 'Custode delle Antiche Tabelline',
+        rarity: 'starter',
+        reqStars: 0,
+        desc: 'Padroneggia l\'armonia geometrica e il calcolo mentale.'
+    },
+    {
+        id: 'fox',
+        name: 'Volpe Ingegnosa',
+        icon: '🦊',
+        title: 'Astuta Calcolatrice',
+        rarity: 'starter',
+        reqStars: 0,
+        desc: 'Trova sempre la scorciatoia mentale più furba e rapida.'
+    },
+    {
+        id: 'cyberbot',
+        name: 'Cyber-Bot 3000',
+        icon: '🤖',
+        title: 'Processore Quantistico',
+        rarity: 'rare',
+        reqStars: 5,
+        desc: 'Elabora le tabelline a frequenza di clock supersonica.'
+    },
+    {
+        id: 'ninja',
+        name: 'Ninja dei Riflessi',
+        icon: '🥷',
+        title: 'Ombra Fulminea dei Calcoli',
+        rarity: 'rare',
+        reqStars: 10,
+        desc: 'Colpisce il risultato prima ancora che il timer scenda.'
+    },
+    {
+        id: 'archimedes',
+        name: 'Gufo Archimede',
+        icon: '🦉',
+        title: 'Scienziato e Maestro di Logica',
+        rarity: 'rare',
+        reqStars: 15,
+        desc: 'Datemi una tabellina e solleverò il mondo!'
+    },
+    {
+        id: 'dragon',
+        name: 'Drago di Fuoco',
+        icon: '🐲',
+        title: 'Signore dei Grandi Boss',
+        rarity: 'epic',
+        reqStars: 20,
+        desc: 'Brucia le moltiplicazioni complesse senza alcuna esitazione.'
+    },
+    {
+        id: 'unicorn',
+        name: 'Creatura Mistica',
+        icon: '🦄',
+        title: 'Incantatrice di Numeri',
+        rarity: 'epic',
+        reqStars: 25,
+        desc: 'Illumina le combinazioni segrete e la matematica vedica.'
+    },
+    {
+        id: 'thunder',
+        name: 'Zeus del Tuono',
+        icon: '⚡',
+        title: 'Dio della Velocità Mentale',
+        rarity: 'epic',
+        reqStars: 30,
+        desc: 'Scatena saette di precisione e combo moltiplicatrici.'
+    },
+    {
+        id: 'trex',
+        name: 'T-Rex Algebrico',
+        icon: '🦖',
+        title: 'Forza Titanica dei Calcoli',
+        rarity: 'epic',
+        reqStars: 35,
+        desc: 'Spazza via anche i quadrati e le basi 100 più temibili.'
+    },
+    {
+        id: 'engineer',
+        name: 'Ingegnere Supremo',
+        icon: '🎓',
+        title: 'Architetto della Matematica AAA',
+        rarity: 'legendary',
+        reqStars: 40,
+        desc: 'Mente scientifica impeccabile e progettista di soluzioni.'
+    },
+    {
+        id: 'grandmaster',
+        name: 'Gran Maestro Assoluto',
+        icon: '👑',
+        title: 'Sovrano Eterno dei Numeri',
+        rarity: 'legendary',
+        reqStars: 45,
+        desc: 'La leggenda vivente: 3 stelle d\'oro in ogni singolo livello.'
+    }
+];
+
+const PLAYER_LEVELS = [
+    { level: 1, title: 'Recluta dei Numeri', minXp: 0, icon: '🌱' },
+    { level: 2, title: 'Apprendista Contabile', minXp: 120, icon: '🌿' },
+    { level: 3, title: 'Calcolatore Rapido', minXp: 300, icon: '⚡' },
+    { level: 4, title: 'Stratega delle Tabelline', minXp: 600, icon: '🎯' },
+    { level: 5, title: 'Maestro del Calcolo Mentale', minXp: 1050, icon: '🧠' },
+    { level: 6, title: 'Mago Vedico', minXp: 1650, icon: '🔮' },
+    { level: 7, title: 'Campione dei Riflessi', minXp: 2400, icon: '🔥' },
+    { level: 8, title: 'Gran Maestro Algebrico', minXp: 3400, icon: '💎' },
+    { level: 9, title: 'Ingegnere Matematico', minXp: 4800, icon: '🎓' },
+    { level: 10, title: 'Ingegnere Supremo dei Numeri', minXp: 6500, icon: '👑' }
+];
 
 class GameManager {
     constructor() {
@@ -203,6 +325,7 @@ class GameManager {
 
         this.initDOM();
         this.bindEvents();
+        this.checkAvatarUnlocks();
         this.updateHeaderStats();
         this.renderLevelsMap();
     }
@@ -211,15 +334,36 @@ class GameManager {
         const defaultData = {
             stars: {}, // { levelId: starsCount }
             highScores: {}, // { levelId: score }
+            bestTimes: {}, // { levelId: timeSec }
             unlockedLevel: 1,
             totalSolved: 0,
+            totalErrors: 0,
             trophies: [],
-            avatarIndex: 0
+            
+            playerName: 'Ingegnere Paolo',
+            avatarId: 'astronaut',
+            unlockedAvatars: ['astronaut', 'pythagoras', 'fox'],
+            xp: 0,
+            level: 1,
+            highestCombo: 0,
+            bestSpeedrunTime: null,
+            bestSpeedrunScore: 0,
+            
+            statsByOp: {
+                '×': { correct: 0, wrong: 0, totalTime: 0 },
+                '+': { correct: 0, wrong: 0, totalTime: 0 },
+                '-': { correct: 0, wrong: 0, totalTime: 0 },
+                '÷': { correct: 0, wrong: 0, totalTime: 0 },
+                'trick': { correct: 0, wrong: 0, totalTime: 0 }
+            }
         };
         try {
             const raw = localStorage.getItem('matemagica_save');
             if (raw) {
-                return Object.assign(defaultData, JSON.parse(raw));
+                const parsed = JSON.parse(raw);
+                const merged = Object.assign(defaultData, parsed);
+                merged.statsByOp = Object.assign(defaultData.statsByOp, parsed.statsByOp || {});
+                return merged;
             }
         } catch (e) {
             console.warn('Errore lettura localStorage', e);
@@ -259,6 +403,10 @@ class GameManager {
         this.modalTrophies = document.getElementById('modal-trophies');
         this.modalVisualHelp = document.getElementById('modal-visual-help');
         this.modalShare = document.getElementById('modal-share');
+        this.modalProfile = document.getElementById('modal-profile');
+        this.modalRecords = document.getElementById('modal-records');
+        this.modalDiploma = document.getElementById('modal-diploma');
+        this.modalLevelUp = document.getElementById('modal-levelup');
         this.btnToggleTheme = document.getElementById('btn-toggle-theme');
         this.initTheme();
     }
@@ -376,15 +524,93 @@ class GameManager {
             }
         });
 
-        // Avatar switcher
-        const avatarDisplay = document.getElementById('user-avatar-display');
-        avatarDisplay.addEventListener('click', () => {
-            this.saveData.avatarIndex = (this.saveData.avatarIndex + 1) % AVATARS.length;
-            avatarDisplay.textContent = AVATARS[this.saveData.avatarIndex];
-            this.saveGame();
-            window.soundEngine.playClick();
-        });
-        avatarDisplay.textContent = AVATARS[this.saveData.avatarIndex || 0];
+        // Profilo & Scelta Avatar
+        const headerProfileBadge = document.getElementById('header-profile-badge');
+        if (headerProfileBadge) {
+            headerProfileBadge.addEventListener('click', () => {
+                this.openProfileModal();
+            });
+        }
+
+        const btnHeroProfile = document.getElementById('btn-hero-profile');
+        if (btnHeroProfile) {
+            btnHeroProfile.addEventListener('click', () => {
+                this.openProfileModal();
+            });
+        }
+
+        const btnCloseProfile = document.getElementById('btn-close-profile');
+        if (btnCloseProfile) {
+            btnCloseProfile.addEventListener('click', () => {
+                window.soundEngine.playClick();
+                if (this.modalProfile) this.modalProfile.classList.remove('active');
+            });
+        }
+
+        const btnSavePlayerName = document.getElementById('btn-save-player-name');
+        if (btnSavePlayerName) {
+            btnSavePlayerName.addEventListener('click', () => {
+                const inp = document.getElementById('player-name-input');
+                this.savePlayerName(inp ? inp.value : '');
+            });
+        }
+
+        // Modale Record & Diagnostica
+        const btnOpenRecords = document.getElementById('btn-open-records');
+        if (btnOpenRecords) {
+            btnOpenRecords.addEventListener('click', () => {
+                this.openRecordsModal();
+            });
+        }
+
+        const btnCloseRecords = document.getElementById('btn-close-records');
+        if (btnCloseRecords) {
+            btnCloseRecords.addEventListener('click', () => {
+                window.soundEngine.playClick();
+                if (this.modalRecords) this.modalRecords.classList.remove('active');
+            });
+        }
+
+        // Modale Diploma Matematico
+        const btnOpenDiplomaProfile = document.getElementById('btn-open-diploma-from-profile');
+        if (btnOpenDiplomaProfile) {
+            btnOpenDiplomaProfile.addEventListener('click', () => {
+                if (this.modalProfile) this.modalProfile.classList.remove('active');
+                this.openDiplomaModal();
+            });
+        }
+
+        const btnOpenDiplomaRecords = document.getElementById('btn-open-diploma-from-records');
+        if (btnOpenDiplomaRecords) {
+            btnOpenDiplomaRecords.addEventListener('click', () => {
+                if (this.modalRecords) this.modalRecords.classList.remove('active');
+                this.openDiplomaModal();
+            });
+        }
+
+        const btnCloseDiploma = document.getElementById('btn-close-diploma');
+        if (btnCloseDiploma) {
+            btnCloseDiploma.addEventListener('click', () => {
+                window.soundEngine.playClick();
+                if (this.modalDiploma) this.modalDiploma.classList.remove('active');
+            });
+        }
+
+        const btnPrintDiploma = document.getElementById('btn-print-diploma');
+        if (btnPrintDiploma) {
+            btnPrintDiploma.addEventListener('click', () => {
+                window.print();
+            });
+        }
+
+        // Modale Level Up
+        const btnCloseLevelUp = document.getElementById('btn-close-levelup');
+        if (btnCloseLevelUp) {
+            btnCloseLevelUp.addEventListener('click', () => {
+                window.soundEngine.playClick();
+                if (this.modalLevelUp) this.modalLevelUp.classList.remove('active');
+            });
+        }
 
         // Aiuto Visivo
         document.getElementById('btn-open-help').addEventListener('click', () => {
@@ -422,7 +648,7 @@ class GameManager {
         }
 
         // Chiusura modali cliccando all'esterno sull'overlay
-        [this.modalShare, this.modalTrophies, this.modalVisualHelp].forEach(modal => {
+        [this.modalShare, this.modalTrophies, this.modalVisualHelp, this.modalProfile, this.modalRecords, this.modalDiploma, this.modalLevelUp].forEach(modal => {
             if (modal) {
                 modal.addEventListener('click', (e) => {
                     if (e.target === modal) {
@@ -550,13 +776,359 @@ class GameManager {
         this.updateHeaderStats();
     }
 
+    getAvatar(id) {
+        return AVATAR_CATALOG.find(a => a.id === id) || AVATAR_CATALOG[0];
+    }
+
+    getCurrentLevelInfo() {
+        const lvl = this.saveData.level || 1;
+        return PLAYER_LEVELS.find(l => l.level === lvl) || PLAYER_LEVELS[PLAYER_LEVELS.length - 1];
+    }
+
+    getNextLevelInfo() {
+        const lvl = this.saveData.level || 1;
+        return PLAYER_LEVELS.find(l => l.level === lvl + 1) || null;
+    }
+
+    addXP(amount, reason = '') {
+        this.saveData.xp = (this.saveData.xp || 0) + amount;
+        this.spawnFloatingScore(`+${amount} XP ⭐`, true);
+
+        // Verifica Level Up
+        const curLvl = this.saveData.level || 1;
+        let newLvl = curLvl;
+        for (let i = PLAYER_LEVELS.length - 1; i >= 0; i--) {
+            if (this.saveData.xp >= PLAYER_LEVELS[i].minXp) {
+                newLvl = PLAYER_LEVELS[i].level;
+                break;
+            }
+        }
+
+        if (newLvl > curLvl) {
+            this.saveData.level = newLvl;
+            const lvlInfo = this.getCurrentLevelInfo();
+            if (window.soundEngine && window.soundEngine.playLevelUp) {
+                window.soundEngine.playLevelUp();
+            }
+            if (window.confetti) {
+                window.confetti.rain(2500);
+            }
+
+            // Mostra modale Level Up
+            const modalIcon = document.getElementById('levelup-icon');
+            const modalTitle = document.getElementById('levelup-new-level');
+            const modalMsg = document.getElementById('levelup-msg');
+            if (modalIcon) modalIcon.textContent = lvlInfo.icon;
+            if (modalTitle) modalTitle.textContent = `Livello ${lvlInfo.level}: ${lvlInfo.title}`;
+            if (modalMsg) modalMsg.textContent = `Congratulazioni ${this.saveData.playerName}! La tua mente matematica ha raggiunto un nuovo traguardo eccellente!`;
+            if (this.modalLevelUp) this.modalLevelUp.classList.add('active');
+
+            this.showToastNotification(`🎉 LEVEL UP! Livello ${lvlInfo.level}: ${lvlInfo.title}!`);
+        }
+
+        this.checkAvatarUnlocks();
+        this.updateHeaderStats();
+        this.saveGame();
+    }
+
+    checkAvatarUnlocks() {
+        let totalStars = 0;
+        Object.values(this.saveData.stars).forEach(s => totalStars += s);
+        if (!this.saveData.unlockedAvatars) {
+            this.saveData.unlockedAvatars = ['astronaut', 'pythagoras', 'fox'];
+        }
+
+        let unlockedAny = false;
+        AVATAR_CATALOG.forEach(av => {
+            let qualifies = false;
+            if (av.reqStars <= totalStars) {
+                qualifies = true;
+            }
+            if (av.id === 'engineer' && (this.saveData.unlockedLevel > 15 || totalStars >= 40)) {
+                qualifies = true;
+            }
+            if (av.id === 'grandmaster' && totalStars >= 45) {
+                qualifies = true;
+            }
+
+            if (qualifies && !this.saveData.unlockedAvatars.includes(av.id)) {
+                this.saveData.unlockedAvatars.push(av.id);
+                this.showToastNotification(`✨ Nuovo Avatar Sbloccato: ${av.icon} ${av.name}!`);
+                unlockedAny = true;
+            }
+        });
+
+        if (unlockedAny) {
+            this.saveGame();
+        }
+    }
+
     updateHeaderStats() {
         let totalStars = 0;
         Object.values(this.saveData.stars).forEach(s => totalStars += s);
-        document.getElementById('header-stars-count').textContent = totalStars;
-        document.getElementById('home-stat-stars').textContent = totalStars;
-        document.getElementById('home-stat-solved').textContent = this.saveData.totalSolved;
-        document.getElementById('home-stat-trophies').textContent = this.saveData.trophies.length;
+        
+        // Header
+        const starsBadge = document.getElementById('header-stars-count');
+        if (starsBadge) starsBadge.textContent = totalStars;
+
+        const curAvatar = this.getAvatar(this.saveData.avatarId);
+        const headerAvatar = document.getElementById('header-avatar-icon');
+        if (headerAvatar) headerAvatar.textContent = curAvatar.icon;
+
+        const lvlInfo = this.getCurrentLevelInfo();
+        const nextLvl = this.getNextLevelInfo();
+        const headerLvl = document.getElementById('header-player-lvl');
+        if (headerLvl) headerLvl.textContent = `Liv. ${lvlInfo.level}`;
+
+        let xpPct = 100;
+        let xpInLvl = (this.saveData.xp || 0) - lvlInfo.minXp;
+        let xpNeeded = 100;
+        if (nextLvl) {
+            xpNeeded = nextLvl.minXp - lvlInfo.minXp;
+            xpPct = Math.min(100, Math.max(0, Math.round((xpInLvl / xpNeeded) * 100)));
+        }
+
+        const headerXpFill = document.getElementById('header-xp-bar-fill');
+        if (headerXpFill) headerXpFill.style.width = `${xpPct}%`;
+
+        // Home Hero Character Card
+        const heroAvatar = document.getElementById('user-avatar-display');
+        if (heroAvatar) heroAvatar.textContent = curAvatar.icon;
+
+        const heroLvlBadge = document.getElementById('hero-lvl-badge');
+        if (heroLvlBadge) heroLvlBadge.textContent = `Liv. ${lvlInfo.level}`;
+
+        const heroName = document.getElementById('hero-player-name');
+        if (heroName) heroName.textContent = this.saveData.playerName || 'Ingegnere Paolo';
+
+        const heroTitle = document.getElementById('hero-player-title');
+        if (heroTitle) heroTitle.textContent = lvlInfo.title;
+
+        const heroXpFill = document.getElementById('hero-xp-fill');
+        if (heroXpFill) heroXpFill.style.width = `${xpPct}%`;
+
+        const heroXpLabel = document.getElementById('hero-xp-label');
+        if (heroXpLabel) {
+            if (nextLvl) {
+                heroXpLabel.textContent = `${this.saveData.xp || 0} / ${nextLvl.minXp} XP (${xpPct}%)`;
+            } else {
+                heroXpLabel.textContent = `${this.saveData.xp || 0} XP - Livello Massimo! 👑`;
+            }
+        }
+
+        // Home Footer Stats
+        const homeStatStars = document.getElementById('home-stat-stars');
+        if (homeStatStars) homeStatStars.textContent = totalStars;
+
+        const homeStatSolved = document.getElementById('home-stat-solved');
+        if (homeStatSolved) homeStatSolved.textContent = this.saveData.totalSolved;
+
+        const homeStatTrophies = document.getElementById('home-stat-trophies');
+        if (homeStatTrophies) homeStatTrophies.textContent = this.saveData.trophies.length;
+    }
+
+    openProfileModal() {
+        window.soundEngine.playClick();
+        const inputName = document.getElementById('player-name-input');
+        if (inputName) inputName.value = this.saveData.playerName || 'Ingegnere Paolo';
+
+        const lvlInfo = this.getCurrentLevelInfo();
+        const nextLvl = this.getNextLevelInfo();
+        const rankIcon = document.getElementById('profile-rank-icon');
+        if (rankIcon) rankIcon.textContent = lvlInfo.icon;
+
+        const rankLevel = document.getElementById('profile-rank-level');
+        if (rankLevel) rankLevel.textContent = `Livello ${lvlInfo.level}: ${lvlInfo.title}`;
+
+        let xpPct = 100;
+        let xpInLvl = (this.saveData.xp || 0) - lvlInfo.minXp;
+        let xpNeeded = 100;
+        if (nextLvl) {
+            xpNeeded = nextLvl.minXp - lvlInfo.minXp;
+            xpPct = Math.min(100, Math.max(0, Math.round((xpInLvl / xpNeeded) * 100)));
+            const xpText = document.getElementById('profile-xp-text');
+            if (xpText) xpText.textContent = `${this.saveData.xp || 0} / ${nextLvl.minXp} XP`;
+            const xpRem = document.getElementById('profile-xp-remaining');
+            if (xpRem) xpRem.textContent = `Mancano ${nextLvl.minXp - (this.saveData.xp || 0)} XP al prossimo livello`;
+        } else {
+            const xpText = document.getElementById('profile-xp-text');
+            if (xpText) xpText.textContent = `${this.saveData.xp || 0} XP`;
+            const xpRem = document.getElementById('profile-xp-remaining');
+            if (xpRem) xpRem.textContent = 'Grado Massimo Raggiunto! 👑';
+        }
+        const pFill = document.getElementById('profile-xp-bar-fill');
+        if (pFill) pFill.style.width = `${xpPct}%`;
+
+        this.renderAvatarCatalog();
+        if (this.modalProfile) this.modalProfile.classList.add('active');
+    }
+
+    renderAvatarCatalog() {
+        const grid = document.getElementById('avatar-catalog-grid');
+        if (!grid) return;
+        grid.innerHTML = '';
+
+        let totalStars = 0;
+        Object.values(this.saveData.stars).forEach(s => totalStars += s);
+
+        const countEl = document.getElementById('unlocked-avatars-count');
+        if (countEl) countEl.textContent = this.saveData.unlockedAvatars.length;
+
+        AVATAR_CATALOG.forEach(av => {
+            const isUnlocked = this.saveData.unlockedAvatars.includes(av.id);
+            const isSelected = this.saveData.avatarId === av.id;
+
+            const card = document.createElement('div');
+            card.className = `avatar-item-card ${isSelected ? 'selected' : ''} ${isUnlocked ? 'unlocked' : 'locked'}`;
+
+            let lockStatus = '';
+            if (!isUnlocked) {
+                const diff = av.reqStars - totalStars;
+                lockStatus = `<div class="avatar-lock-status">🔒 Richiede ${av.reqStars} ⭐ (-${Math.max(1, diff)})</div>`;
+            }
+
+            card.innerHTML = `
+                <span class="avatar-ico">${av.icon}</span>
+                <span class="avatar-name">${av.name}</span>
+                <span class="avatar-rarity-badge rarity-${av.rarity}">${av.rarity}</span>
+                ${lockStatus}
+            `;
+
+            card.addEventListener('click', () => {
+                if (isUnlocked) {
+                    this.saveData.avatarId = av.id;
+                    this.saveGame();
+                    window.soundEngine.playClick();
+                    this.updateHeaderStats();
+                    this.renderAvatarCatalog();
+                    this.showToastNotification(`Avatar selezionato: ${av.icon} ${av.name}!`);
+                } else {
+                    window.soundEngine.playWrong();
+                    this.showToastNotification(`🔒 Questo avatar richiede ${av.reqStars} stelle per essere sbloccato!`);
+                }
+            });
+
+            grid.appendChild(card);
+        });
+    }
+
+    savePlayerName(name) {
+        const trimmed = (name || '').trim();
+        if (!trimmed) {
+            this.showToastNotification('Inserisci un nome valido!');
+            return;
+        }
+        this.saveData.playerName = trimmed;
+        this.saveGame();
+        this.updateHeaderStats();
+        window.soundEngine.playClick();
+        this.showToastNotification(`Nome salvato: ${trimmed} 💾`);
+    }
+
+    openRecordsModal() {
+        window.soundEngine.playClick();
+        
+        // 4 KPI
+        document.getElementById('rec-kpi-combo').textContent = `x${this.saveData.highestCombo || 0}`;
+        
+        const speedrunVal = document.getElementById('rec-kpi-speedrun');
+        if (this.saveData.bestSpeedrunTime) {
+            speedrunVal.textContent = `${this.saveData.bestSpeedrunTime.toFixed(1)}s`;
+        } else {
+            speedrunVal.textContent = '--';
+        }
+
+        const totalAttempts = (this.saveData.totalSolved || 0) + (this.saveData.totalErrors || 0);
+        const accuracy = totalAttempts > 0 ? Math.round((this.saveData.totalSolved / totalAttempts) * 100) : 100;
+        document.getElementById('rec-kpi-accuracy').textContent = `${accuracy}%`;
+        document.getElementById('rec-kpi-solved').textContent = this.saveData.totalSolved || 0;
+
+        // Diagnostica Didattica
+        const skillsList = document.getElementById('skills-bars-list');
+        skillsList.innerHTML = '';
+
+        const opLabels = {
+            '×': 'Moltiplicazioni (×)',
+            '÷': 'Divisioni (÷)',
+            '+': 'Addizioni (+)',
+            '-': 'Sottrazioni (-)',
+            'trick': 'Trucchi Mentali (★)'
+        };
+
+        let bestOp = null;
+        let bestRatio = -1;
+        let worstOp = null;
+        let worstRatio = 2;
+
+        Object.keys(opLabels).forEach(k => {
+            const stat = (this.saveData.statsByOp && this.saveData.statsByOp[k]) || { correct: 0, wrong: 0 };
+            const opTotal = stat.correct + stat.wrong;
+            const opPct = opTotal > 0 ? Math.round((stat.correct / opTotal) * 100) : 100;
+
+            if (opTotal >= 3) {
+                if (opPct > bestRatio) { bestRatio = opPct; bestOp = opLabels[k]; }
+                if (opPct < worstRatio) { worstRatio = opPct; worstOp = opLabels[k]; }
+            }
+
+            const row = document.createElement('div');
+            row.className = 'skill-row';
+            row.innerHTML = `
+                <span class="skill-name">${opLabels[k]}</span>
+                <div class="skill-track">
+                    <div class="skill-fill" style="width: ${opPct}%;"></div>
+                </div>
+                <span class="skill-pct">${opPct}%</span>
+            `;
+            skillsList.appendChild(row);
+        });
+
+        const insightBox = document.getElementById('diagnostics-insight-box');
+        if (bestOp && worstOp && bestOp !== worstOp) {
+            insightBox.innerHTML = `💡 <strong>Analisi Ingegneristica:</strong> Eccellente precisione in <strong>${bestOp} (${bestRatio}%)</strong>. Ti consigliamo una sessione mirata in Palestra su <strong>${worstOp} (${worstRatio}%)</strong> per raggiungere la perfezione assoluta!`;
+        } else {
+            insightBox.innerHTML = `💡 <strong>Analisi Didattica:</strong> Continua a risolvere calcoli nell'Avventura per affinare il radar delle tue competenze matematiche!`;
+        }
+
+        // Hall of Fame
+        const hofList = document.getElementById('hall-of-fame-list');
+        hofList.innerHTML = '';
+        ADVENTURE_LEVELS.forEach(lvl => {
+            const stars = this.saveData.stars[lvl.id] || 0;
+            const score = this.saveData.highScores[lvl.id] || null;
+
+            const row = document.createElement('div');
+            row.className = 'hof-row';
+            row.innerHTML = `
+                <span class="hof-lvl-name">${lvl.icon} Livello ${lvl.id}: ${lvl.name}</span>
+                <div class="hof-stats">
+                    <span class="hof-stars">${'⭐'.repeat(stars) || '☆ ☆ ☆'}</span>
+                    <span class="hof-score">${score ? score + ' pts' : 'Non completato'}</span>
+                </div>
+            `;
+            hofList.appendChild(row);
+        });
+
+        if (this.modalRecords) this.modalRecords.classList.add('active');
+    }
+
+    openDiplomaModal() {
+        if (window.soundEngine && window.soundEngine.playLevelUp) {
+            window.soundEngine.playLevelUp();
+        } else if (window.soundEngine) {
+            window.soundEngine.playVictory();
+        }
+        if (window.confetti) window.confetti.burst(window.innerWidth / 2, window.innerHeight * 0.3, 40);
+
+        document.getElementById('diploma-student-name').textContent = this.saveData.playerName || 'Ingegnere Paolo';
+        
+        const lvlInfo = this.getCurrentLevelInfo();
+        document.getElementById('diploma-rank-title').textContent = `${lvlInfo.icon} ${lvlInfo.title}`;
+
+        const today = new Date();
+        const dateOptions = { year: 'numeric', month: 'long', day: 'numeric' };
+        document.getElementById('diploma-date-str').textContent = today.toLocaleDateString('it-IT', dateOptions);
+
+        if (this.modalDiploma) this.modalDiploma.classList.add('active');
     }
 
     renderLevelsMap() {
@@ -1090,6 +1662,7 @@ class GameManager {
         this.wrongCount = 0;
         this.mistakes = [];
         this.maxTime = timePerQ;
+        this.runStartTime = Date.now();
         
         this.updateHUD();
         this.showScreen('gameplay');
@@ -1233,10 +1806,24 @@ class GameManager {
         const isCorrect = (ans === this.currentQuestion.answer);
         const answerTime = (Date.now() - this.questionStartTime) / 1000;
 
+        // Tracciamento Diagnostica Statistiche per Operazione
+        const opKey = this.currentQuestion.trickInfo ? 'trick' : (this.currentQuestion.op || '×');
+        if (!this.saveData.statsByOp) this.saveData.statsByOp = {};
+        if (!this.saveData.statsByOp[opKey]) {
+            this.saveData.statsByOp[opKey] = { correct: 0, wrong: 0, totalTime: 0 };
+        }
+
         if (isCorrect) {
             this.correctCount++;
             this.combo++;
             if (this.combo > this.maxComboThisRun) this.maxComboThisRun = this.combo;
+            if (this.combo > (this.saveData.highestCombo || 0)) {
+                this.saveData.highestCombo = this.combo;
+            }
+
+            // Statistiche Operazione
+            this.saveData.statsByOp[opKey].correct++;
+            this.saveData.statsByOp[opKey].totalTime += answerTime;
 
             // Punti: base 100 + bonus combo + bonus velocità
             let pts = 100 * Math.min(this.combo, 4);
@@ -1245,13 +1832,19 @@ class GameManager {
             }
             this.score += pts;
 
+            // Calcolo XP Personaggio (Base 15 XP + Combo Bonus + Speed Bonus)
+            let gainedXP = 15;
+            if (this.combo >= 3) gainedXP += 5 * Math.min(this.combo, 6);
+            if (answerTime < 2.5 && this.maxTime > 0) gainedXP += 10;
+            this.addXP(gainedXP, 'Calcolo Corretto');
+
             // Effetti Visivi AAA: Floating XP & Speed Bonus
-            this.spawnFloatingScore(`+${pts} XP! 🔥`);
+            this.spawnFloatingScore(`+${pts} pts! 🔥`);
             if (this.maxTime > 0 && answerTime < 3) {
                 this.spawnFloatingScore(`⚡ SPEED BONUS! +50`, true);
             }
 
-            this.saveData.totalSolved++;
+            this.saveData.totalSolved = (this.saveData.totalSolved || 0) + 1;
             if (this.saveData.totalSolved >= 50) {
                 this.unlockTrophy('maratona_50');
             }
@@ -1264,7 +1857,9 @@ class GameManager {
             }
 
             // Suoni & Trofei per Trucchi Mentali
-            if (this.currentQuestion.trickInfo) {
+            if (this.combo >= 4 && window.soundEngine && window.soundEngine.playStreak) {
+                window.soundEngine.playStreak();
+            } else if (this.currentQuestion.trickInfo) {
                 window.soundEngine.playTrickSuccess();
                 if (this.currentQuestion.trickType === '11') this.unlockTrophy('mago_11');
                 if (this.currentQuestion.trickType === 'square5') this.unlockTrophy('re_quadrati');
@@ -1280,6 +1875,9 @@ class GameManager {
         } else {
             this.combo = 0;
             this.wrongCount++;
+            this.saveData.totalErrors = (this.saveData.totalErrors || 0) + 1;
+            this.saveData.statsByOp[opKey].wrong++;
+
             this.mistakes.push({
                 eq: `${this.currentQuestion.num1} ${this.currentQuestion.op} ${this.currentQuestion.num2}`,
                 correct: this.currentQuestion.answer,
@@ -1477,6 +2075,10 @@ class GameManager {
                 }, 400 + i * 350);
             }
 
+            // Bonus XP Vittoria Livello
+            const levelBonusXP = this.currentMode === 'adventure' ? (this.currentLevelConfig.id >= 15 ? 300 : 120) : 60;
+            this.addXP(levelBonusXP, 'Vittoria Sfida');
+
             // Salvataggio Livello e sblocco successivo
             if (this.currentMode === 'adventure') {
                 const lvlId = this.currentLevelConfig.id;
@@ -1487,6 +2089,14 @@ class GameManager {
                 const prevScore = this.saveData.highScores[lvlId] || 0;
                 if (this.score > prevScore) {
                     this.saveData.highScores[lvlId] = this.score;
+                }
+
+                // Tracciamento Tempo Record Livello
+                if (!this.saveData.bestTimes) this.saveData.bestTimes = {};
+                const elapsed = (Date.now() - (this.runStartTime || Date.now())) / 1000;
+                const prevTime = this.saveData.bestTimes[lvlId];
+                if (!prevTime || elapsed < prevTime) {
+                    this.saveData.bestTimes[lvlId] = elapsed;
                 }
 
                 if (lvlId >= this.saveData.unlockedLevel && lvlId < ADVENTURE_LEVELS.length) {
@@ -1510,7 +2120,16 @@ class GameManager {
                     }
                 }
                 if (allThreeStars) this.unlockTrophy('gran_maestro');
+            } else if (this.currentMode === 'speedrun') {
+                const elapsed = (Date.now() - (this.runStartTime || Date.now())) / 1000;
+                if (!this.saveData.bestSpeedrunTime || elapsed < this.saveData.bestSpeedrunTime) {
+                    this.saveData.bestSpeedrunTime = elapsed;
+                    this.saveData.bestSpeedrunScore = this.score;
+                    this.showToastNotification(`⚡ RECORD SFIDA A TEMPO: ${elapsed.toFixed(1)}s! 🎯`);
+                }
             }
+
+            this.checkAvatarUnlocks();
         } else {
             document.getElementById('res-title').textContent = '💪 NON ARRENDERTI!';
             document.getElementById('res-subtitle').textContent = `Riprova, i grandi campioni si allenano con pazienza!`;

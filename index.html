@@ -18,7 +18,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700;800;900&family=Nunito:wght@600;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=3">
 </head>
 <body class="dark-theme">
 
@@ -40,11 +40,21 @@
         </div>
 
         <div class="header-controls">
+            <!-- Badge Livello & Profilo Giocatore -->
+            <div class="badge-stat profile-badge" id="header-profile-badge" title="Tocca per scegliere Avatar e vedere Livello XP">
+                <span class="header-avatar-mini" id="header-avatar-icon">🚀</span>
+                <div class="header-profile-meta">
+                    <span class="header-player-lvl" id="header-player-lvl">Liv. 1</span>
+                    <div class="header-xp-bar-bg"><div class="header-xp-bar-fill" id="header-xp-bar-fill" style="width: 0%;"></div></div>
+                </div>
+            </div>
+
             <div class="badge-stat" id="header-stars-badge" title="Stelle Totali Guadagnate">
                 <span class="star-icon">⭐</span>
                 <span id="header-stars-count">0</span>
             </div>
 
+            <button class="btn-icon" id="btn-open-records" title="Record & Statistiche Personali">📊</button>
             <button class="btn-icon" id="btn-toggle-theme" title="Tema Chiaro / Scuro">☀️</button>
             <button class="btn-icon" id="btn-open-share" title="Pubblica / Condividi Online">🌐</button>
             <button class="btn-icon" id="btn-toggle-fullscreen" title="Schermo Intero (Tablet / PC)">⛶</button>
@@ -59,9 +69,22 @@
         <!-- =================== 1. SCHERMO HOME =================== -->
         <section id="screen-home" class="screen active">
             <div class="home-hero">
-                <div class="hero-avatar-picker">
-                    <span class="avatar-display" id="user-avatar-display" title="Tocca per cambiare personaggio">🚀</span>
-                    <span class="avatar-picker-label">Tocca per scegliere avatar</span>
+                <div class="hero-character-card" id="btn-hero-profile" title="Tocca per scegliere Avatar e personalizzare il profilo">
+                    <div class="hero-avatar-wrapper">
+                        <span class="avatar-display" id="user-avatar-display">🚀</span>
+                        <span class="avatar-badge-lvl" id="hero-lvl-badge">Liv. 1</span>
+                    </div>
+                    <div class="hero-character-meta">
+                        <div class="hero-character-name-row">
+                            <span class="hero-character-name" id="hero-player-name">Ingegnere Paolo</span>
+                            <span class="btn-edit-pencil">✏️</span>
+                        </div>
+                        <span class="hero-character-title" id="hero-player-title">Recluta dei Numeri</span>
+                        <div class="hero-xp-track">
+                            <div class="hero-xp-fill" id="hero-xp-fill" style="width: 0%;"></div>
+                            <span class="hero-xp-label" id="hero-xp-label">0 / 100 XP</span>
+                        </div>
+                    </div>
                 </div>
                 <h2 class="hero-title">Pronto a diventare un Mago dei Numeri?</h2>
                 <p class="hero-subtitle">Allena la tua mente, padroneggia i trucchi del calcolo rapido e scala tutti i livelli!</p>
@@ -656,10 +679,166 @@
         </div>
     </div>
 
+    <!-- =================== MODALE PROFILO & SCELTA AVATAR =================== -->
+    <div class="modal-overlay" id="modal-profile">
+        <div class="modal-content modal-profile-content">
+            <h3 class="modal-title">🧙‍♂️ Il Tuo Personaggio</h3>
+            <p style="color: var(--text-muted); font-size: 0.92rem; margin-bottom: 14px;">Personalizza il tuo nome e scegli il tuo avatar tra quelli sbloccati!</p>
+
+            <!-- Box Nome & Titolo -->
+            <div class="profile-meta-editor">
+                <div class="profile-input-group">
+                    <label for="player-name-input">Nome Giocatore / Ingegnere:</label>
+                    <div class="input-with-btn">
+                        <input type="text" id="player-name-input" maxlength="22" placeholder="Inserisci il tuo nome..." value="Ingegnere Paolo">
+                        <button class="btn-save-name" id="btn-save-player-name">Salva 💾</button>
+                    </div>
+                </div>
+
+                <div class="profile-rank-card">
+                    <div class="profile-rank-icon" id="profile-rank-icon">🌱</div>
+                    <div class="profile-rank-info">
+                        <div class="profile-rank-level" id="profile-rank-level">Livello 1: Recluta dei Numeri</div>
+                        <div class="profile-xp-details">
+                            <span id="profile-xp-text">0 / 100 XP</span>
+                            <span class="xp-next-needed" id="profile-xp-remaining">Mancano 100 XP al prossimo livello</span>
+                        </div>
+                        <div class="profile-xp-bar-bg">
+                            <div class="profile-xp-bar-fill" id="profile-xp-bar-fill" style="width: 0%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <h4 class="avatar-catalog-title">Scegli il tuo Avatar (<span id="unlocked-avatars-count">3</span>/12 Sbloccati)</h4>
+            <div class="avatar-catalog-grid" id="avatar-catalog-grid">
+                <!-- Generato dinamicamente via JS -->
+            </div>
+
+            <div class="profile-actions-row">
+                <button class="btn-diploma-trigger" id="btn-open-diploma-from-profile">📜 Diploma di Laurea</button>
+                <button class="btn-close-modal" id="btn-close-profile">Chiudi</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- =================== MODALE RECORD & DIAGNOSTICA =================== -->
+    <div class="modal-overlay" id="modal-records">
+        <div class="modal-content modal-records-content">
+            <h3 class="modal-title">📊 Bacheca dei Record & Diagnostica</h3>
+            <p style="color: var(--text-muted); font-size: 0.92rem; margin-bottom: 16px;">Analisi scientifica del tuo rendimento matematico:</p>
+
+            <!-- 4 KPI Metrics -->
+            <div class="records-kpi-grid">
+                <div class="record-kpi-card">
+                    <div class="record-kpi-val" id="rec-kpi-combo">0</div>
+                    <div class="record-kpi-lbl">🔥 Serie Combo Record</div>
+                </div>
+                <div class="record-kpi-card">
+                    <div class="record-kpi-val" id="rec-kpi-speedrun">--</div>
+                    <div class="record-kpi-lbl">⚡ Sfida a Tempo Boss</div>
+                </div>
+                <div class="record-kpi-card">
+                    <div class="record-kpi-val" id="rec-kpi-accuracy">100%</div>
+                    <div class="record-kpi-lbl">🎯 Precisione Risposte</div>
+                </div>
+                <div class="record-kpi-card">
+                    <div class="record-kpi-val" id="rec-kpi-solved">0</div>
+                    <div class="record-kpi-lbl">🧮 Calcoli Risolti Totali</div>
+                </div>
+            </div>
+
+            <!-- Analisi per Operazione (Radar / Barre) -->
+            <div class="skills-breakdown-card">
+                <h4>Diagnostica Didattica per Operazione</h4>
+                <div class="skills-bars-list" id="skills-bars-list">
+                    <!-- Generato via JS: Moltiplicazione, Divisione, Addizione, Sottrazione, Trucchi -->
+                </div>
+                <div class="diagnostics-insight-box" id="diagnostics-insight-box">
+                    💡 <strong>Consiglio dell'Accademia:</strong> Risolvi più livelli dell'avventura per generare l'analisi dettagliata dei tuoi punti di forza.
+                </div>
+            </div>
+
+            <!-- Hall of Fame dei 15 Livelli -->
+            <div class="hall-of-fame-card">
+                <h4>🏆 Hall of Fame dei Livelli Avventura</h4>
+                <div class="hall-of-fame-scroll" id="hall-of-fame-list">
+                    <!-- Popolato dinamicamente da JS -->
+                </div>
+            </div>
+
+            <div class="profile-actions-row">
+                <button class="btn-diploma-trigger" id="btn-open-diploma-from-records">📜 Genera Diploma Matematico</button>
+                <button class="btn-close-modal" id="btn-close-records">Chiudi</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- =================== MODALE DIPLOMA UFFICIALE AAA =================== -->
+    <div class="modal-overlay" id="modal-diploma">
+        <div class="modal-content modal-diploma-content">
+            <div class="diploma-parchment" id="diploma-printable-area">
+                <div class="diploma-border-inner">
+                    <div class="diploma-header">
+                        <div class="diploma-badge">ACCADEMIA INTERNAZIONALE MATEMAGICA</div>
+                        <h2 class="diploma-title">DIPLOMA DI LAUREA</h2>
+                        <div class="diploma-subtitle">IN INGEGNERIA DEL CALCOLO MENTALE & TABELLINE</div>
+                    </div>
+
+                    <div class="diploma-body">
+                        <p class="diploma-body-intro">Si conferisce con solennità e massimo onore all'allievo/a:</p>
+                        <h3 class="diploma-student-name" id="diploma-student-name">Ingegnere Paolo</h3>
+                        <p class="diploma-text-praise">
+                            Per aver dimostrato una brillante comprensione dei trucchi matematici mentali, 
+                            velocità di calcolo fulminea e dedizione costante nella risoluzione delle tabelline 
+                            e delle operazioni complesse, conseguendo il grado ufficiale di:
+                        </p>
+                        <div class="diploma-rank-title" id="diploma-rank-title">Gran Maestro dei Numeri</div>
+                    </div>
+
+                    <div class="diploma-footer">
+                        <div class="diploma-seal">
+                            <div class="diploma-seal-star">★</div>
+                            <div class="diploma-seal-text">MATEMAGICA<br>ACCREDITATA</div>
+                        </div>
+                        <div class="diploma-meta-info">
+                            <div class="diploma-date-row">Rilasciato il: <strong id="diploma-date-str">27 Settembre 2026</strong></div>
+                            <div class="diploma-signature">
+                                <span class="sig-line">Il Gran Consiglio dei Numeri</span>
+                                <span class="sig-subtitle">Commissione d'Esame Matemagica</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="diploma-controls-row">
+                <button class="btn-print-diploma" id="btn-print-diploma">🖨️ Stampa / Salva PDF</button>
+                <button class="btn-close-modal" id="btn-close-diploma">Chiudi</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- =================== MODALE LEVEL UP CELEBRATIVO =================== -->
+    <div class="modal-overlay" id="modal-levelup">
+        <div class="modal-content modal-levelup-content">
+            <div class="levelup-sparkles">✨ 🎉 ✨</div>
+            <h2 class="levelup-title">LEVEL UP!</h2>
+            <div class="levelup-icon" id="levelup-icon">👑</div>
+            <div class="levelup-new-level" id="levelup-new-level">Livello 2: Apprendista Contabile</div>
+            <p class="levelup-msg" id="levelup-msg">I tuoi calcoli mentali si fanno sempre più veloci e potenti!</p>
+            <div class="levelup-rewards-box" id="levelup-rewards-box">
+                <div class="reward-pill">+100 Punti Gloria 🌟</div>
+                <div class="reward-pill">Nuovo Avatar Sbloccabile 🚀</div>
+            </div>
+            <button class="btn-close-modal" id="btn-close-levelup">Avanti Tutta! 🚀</button>
+        </div>
+    </div>
+
     <!-- Script Audio, Effetti e Gioco -->
-    <script src="audio.js"></script>
-    <script src="confetti.js"></script>
-    <script src="game.js"></script>
+    <script src="audio.js?v=3"></script>
+    <script src="confetti.js?v=3"></script>
+    <script src="game.js?v=3"></script>
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
