@@ -3274,6 +3274,158 @@ body.dark-theme .reward-pill {
     color: #c7d2fe;
 }
 
+/* =================== 20 LIVELLI & 4 MONDI: STYLING STRUTTURATO =================== */
+.world-section-banner {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 18px 24px;
+    border-radius: var(--radius-xl);
+    margin: 32px 0 14px;
+    color: white;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.22);
+    position: relative;
+    overflow: hidden;
+    flex-wrap: wrap;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.world-section-banner:first-child {
+    margin-top: 8px;
+}
+
+.world-banner-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    text-align: left;
+}
+
+.world-banner-tag {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    opacity: 0.92;
+    font-weight: 900;
+}
+
+.world-banner-title {
+    font-size: 1.3rem;
+    font-weight: 900;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.world-banner-desc {
+    font-size: 0.92rem;
+    opacity: 0.95;
+    font-weight: 500;
+    max-width: 650px;
+    line-height: 1.4;
+}
+
+.world-banner-status {
+    padding: 8px 18px;
+    border-radius: var(--radius-full);
+    font-size: 0.85rem;
+    font-weight: 800;
+    background: rgba(255, 255, 255, 0.22);
+    backdrop-filter: blur(6px);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* 4 Mondi Tematici */
+.world-banner.world-1 {
+    background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+    border: 2px solid rgba(52, 211, 153, 0.45);
+    box-shadow: 0 10px 25px rgba(5, 150, 105, 0.3);
+}
+
+.world-banner.world-2 {
+    background: linear-gradient(135deg, #0284c7 0%, #3b82f6 100%);
+    border: 2px solid rgba(96, 165, 250, 0.45);
+    box-shadow: 0 10px 25px rgba(2, 132, 199, 0.3);
+}
+
+.world-banner.world-3 {
+    background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+    border: 2px solid rgba(192, 132, 252, 0.45);
+    box-shadow: 0 10px 25px rgba(124, 58, 237, 0.3);
+}
+
+.world-banner.world-4 {
+    background: linear-gradient(135deg, #78350f 0%, #d97706 50%, #f59e0b 100%);
+    border: 2px solid rgba(251, 191, 36, 0.6);
+    box-shadow: 0 12px 30px rgba(245, 158, 11, 0.35);
+    color: #fff;
+}
+
+.world-banner.world-4 .world-banner-status {
+    background: rgba(0, 0, 0, 0.3);
+    border-color: rgba(251, 191, 36, 0.5);
+    color: #fef3c7;
+}
+
+/* World Num Badges */
+.level-card.world-1 .level-num-badge {
+    background: #10b981;
+}
+.level-card.world-2 .level-num-badge {
+    background: #0284c7;
+}
+.level-card.world-3 .level-num-badge {
+    background: #8b5cf6;
+}
+.level-card.world-4 .level-num-badge {
+    background: #f59e0b;
+    color: #1e1b4b;
+}
+
+/* Boss Cards (5, 10, 20) */
+.level-card.boss-card {
+    border-color: #fbbf24;
+    box-shadow: 0 8px 0 #d97706, 0 10px 25px rgba(245, 158, 11, 0.25);
+    background: linear-gradient(180deg, #fffbeb 0%, #ffffff 100%);
+}
+
+.level-card.boss-card.unlocked .level-name {
+    color: #b45309;
+}
+
+/* Dark theme world banners */
+body.dark-theme .world-banner.world-1 {
+    background: linear-gradient(135deg, #064e3b 0%, #047857 100%);
+    border-color: rgba(52, 211, 153, 0.35);
+}
+body.dark-theme .world-banner.world-2 {
+    background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 100%);
+    border-color: rgba(96, 165, 250, 0.35);
+}
+body.dark-theme .world-banner.world-3 {
+    background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 100%);
+    border-color: rgba(192, 132, 252, 0.35);
+}
+body.dark-theme .world-banner.world-4 {
+    background: linear-gradient(135deg, #451a03 0%, #78350f 50%, #b45309 100%);
+    border-color: rgba(251, 191, 36, 0.5);
+    color: #fef3c7;
+}
+body.dark-theme .level-card.boss-card {
+    background: linear-gradient(180deg, #1e1b4b 0%, #0f172a 100%);
+    border-color: #f59e0b;
+    box-shadow: 0 8px 0 #b45309, 0 0 25px rgba(245, 158, 11, 0.3);
+}
+body.dark-theme .level-card.boss-card.unlocked .level-name {
+    color: #fbbf24;
+}
+
 /* Stampa Diploma */
 @media print {
     body * {

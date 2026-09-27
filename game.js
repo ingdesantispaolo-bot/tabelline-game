@@ -1,12 +1,15 @@
 // game.js - Core Engine per Matemagica (Tabelline e Calcoli)
 
-// Definizione della scala dei livelli dell'Avventura
+// Definizione della scala dei 20 livelli dell'Avventura (4 Mondi da 5 Livelli)
 const ADVENTURE_LEVELS = [
+    // ===== MONDO 1: L'ISOLA DELLE TABELLINE BASE (Livelli 1-5) =====
     {
         id: 1,
+        worldId: 1,
+        worldName: "Mondo 1: L'Isola delle Tabelline Base",
         name: "I Primi Passi",
         icon: "🌱",
-        desc: "Tabelline dell'1, 2 e 10",
+        desc: "Tabelline dell'1, 2 e 10. Concetto di raddoppio e sistema decimale.",
         type: "tables",
         tables: [1, 2, 10],
         ops: ['×'],
@@ -15,9 +18,11 @@ const ADVENTURE_LEVELS = [
     },
     {
         id: 2,
+        worldId: 1,
+        worldName: "Mondo 1: L'Isola delle Tabelline Base",
         name: "Il Bosco dei Salti",
         icon: "🌲",
-        desc: "Tabelline del 3, 4 e 5",
+        desc: "Tabelline del 3, 4 e 5. Salti ritmici e il 4 come doppio del 2.",
         type: "tables",
         tables: [3, 4, 5],
         ops: ['×'],
@@ -26,9 +31,11 @@ const ADVENTURE_LEVELS = [
     },
     {
         id: 3,
+        worldId: 1,
+        worldName: "Mondo 1: L'Isola delle Tabelline Base",
         name: "La Scalata Rocciosa",
         icon: "🧗",
-        desc: "Tabelline del 6 e 7 (le più toste!)",
+        desc: "Tabelline del 6 e 7. Le combinazioni storiche: 6×7=42 e 7×8=56!",
         type: "tables",
         tables: [6, 7],
         ops: ['×'],
@@ -37,9 +44,11 @@ const ADVENTURE_LEVELS = [
     },
     {
         id: 4,
+        worldId: 1,
+        worldName: "Mondo 1: L'Isola delle Tabelline Base",
         name: "La Fortezza dei Campioni",
         icon: "🏰",
-        desc: "Tabelline dell'8 e 9",
+        desc: "Tabelline dell'8 e 9. Potenze del 2 e trucco delle cifre speculari per il 9.",
         type: "tables",
         tables: [8, 9],
         ops: ['×'],
@@ -48,20 +57,26 @@ const ADVENTURE_LEVELS = [
     },
     {
         id: 5,
-        name: "Il Regno del Dodici",
+        worldId: 1,
+        worldName: "Mondo 1: L'Isola delle Tabelline Base",
+        name: "Il Regno del Dodici & Gran Ripasso",
         icon: "👑",
-        desc: "Tabelline dell'11 e 12 + ripasso completo",
+        desc: "Tabelline dell'11 e 12 + sfida riassuntiva di tutte le 12 tabelline!",
         type: "tables",
         tables: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
         ops: ['×'],
         questionsCount: 15,
-        timePerQuestion: 10
+        timePerQuestion: 11
     },
+
+    // ===== MONDO 2: IL LABIRINTO DELLE 4 OPERAZIONI (Livelli 6-10) =====
     {
         id: 6,
-        name: "Fiume delle Somme",
+        worldId: 2,
+        worldName: "Mondo 2: Il Labirinto delle 4 Operazioni",
+        name: "Fiume delle Somme Veloci",
         icon: "🌊",
-        desc: "Addizioni veloci a mente fino a 100",
+        desc: "Addizioni mentali veloci fino a 100 con completamento alla decina.",
         type: "mental",
         ops: ['+'],
         maxNum: 100,
@@ -70,9 +85,11 @@ const ADVENTURE_LEVELS = [
     },
     {
         id: 7,
+        worldId: 2,
+        worldName: "Mondo 2: Il Labirinto delle 4 Operazioni",
         name: "Labirinto delle Differenze",
         icon: "🧩",
-        desc: "Sottrazioni mentali con prestiti",
+        desc: "Sottrazioni mentali con prestiti e complementi a 100.",
         type: "mental",
         ops: ['-'],
         maxNum: 100,
@@ -81,9 +98,11 @@ const ADVENTURE_LEVELS = [
     },
     {
         id: 8,
-        name: "Isola della Divisione",
+        worldId: 2,
+        worldName: "Mondo 2: Il Labirinto delle 4 Operazioni",
+        name: "Isola della Divisione Esatta",
         icon: "🏝️",
-        desc: "Divisioni esatte (l'inverso della tabellina)",
+        desc: "Divisioni esatte (l'inverso della tabellina: dividendo ÷ divisore).",
         type: "division",
         tables: [2, 3, 4, 5, 6, 7, 8, 9, 10],
         ops: ['÷'],
@@ -92,68 +111,140 @@ const ADVENTURE_LEVELS = [
     },
     {
         id: 9,
-        name: "Gran Boss Elementare",
+        worldId: 2,
+        worldName: "Mondo 2: Il Labirinto delle 4 Operazioni",
+        name: "Il Vulcano degli Zeri & Grandezze",
+        icon: "🌋",
+        desc: "Moltiplica e dividi per 10, 100 e con zeri (40×60, 3600÷9, 500×8)!",
+        type: "powers_ten",
+        questionsCount: 12,
+        timePerQuestion: 12
+    },
+    {
+        id: 10,
+        worldId: 2,
+        worldName: "Mondo 2: Il Labirinto delle 4 Operazioni",
+        name: "Gran Boss delle 4 Operazioni",
         icon: "🐉",
-        desc: "Sfida con tutte e 4 le operazioni (+, -, ×, ÷)",
+        desc: "La prova del fuoco: tutte e 4 le operazioni (+, -, ×, ÷) a rotazione!",
         type: "boss",
         ops: ['+', '-', '×', '÷'],
         questionsCount: 16,
         timePerQuestion: 10
     },
-    // ===== LEGA DEI GRANDI MAGHI: CALCOLI COMPLESSI & TRUCCHI =====
-    {
-        id: 10,
-        name: "L'Arte dell'Undici",
-        icon: "⚡",
-        desc: "Moltiplica numeri a due cifre per 11 con il trucco delle cifre aperte!",
-        type: "trick_11",
-        questionsCount: 10,
-        timePerQuestion: 16
-    },
+
+    // ===== MONDO 3: L'ACCADEMIA DEI TRUCCHI MENTALI (Livelli 11-15) =====
     {
         id: 11,
-        name: "Il Tempio dei Quadrati",
-        icon: "🔥",
-        desc: "Quadrati dei numeri che terminano per 5 (35², 75², 95²...)",
-        type: "trick_square5",
+        worldId: 3,
+        worldName: "Mondo 3: L'Accademia dei Trucchi Mentali",
+        name: "L'Arte dell'Undici",
+        icon: "⚡",
+        desc: "Moltiplica numeri a 2 cifre per 11 con il trucco delle cifre aperte!",
+        type: "trick_11",
         questionsCount: 10,
-        timePerQuestion: 16
+        timePerQuestion: 15
     },
     {
         id: 12,
-        name: "La Galassia Vedica",
-        icon: "🪐",
-        desc: "Metodo Vedico: moltiplicazioni fulminee attorno a Base 100",
-        type: "trick_base100",
+        worldId: 3,
+        worldName: "Mondo 3: L'Accademia dei Trucchi Mentali",
+        name: "Il Tempio dei Quadrati (N5²)",
+        icon: "🔥",
+        desc: "Quadrati dei numeri che terminano per 5: decina × successiva + 25 (35², 75²...)",
+        type: "trick_square5",
         questionsCount: 10,
-        timePerQuestion: 18
+        timePerQuestion: 15
     },
     {
         id: 13,
+        worldId: 3,
+        worldName: "Mondo 3: L'Accademia dei Trucchi Mentali",
         name: "Scomponi e Conquista",
         icon: "⚖️",
-        desc: "Raddoppia e Dimezza: calcoli impossibili resi elementari",
+        desc: "Raddoppia e Dimezza: calcoli a due cifre resi elementari (24×15, 18×25)!",
         type: "trick_double_halve",
         questionsCount: 10,
         timePerQuestion: 15
     },
     {
         id: 14,
-        name: "L'Alchimia dei Prodotti",
+        worldId: 3,
+        worldName: "Mondo 3: L'Accademia dei Trucchi Mentali",
+        name: "Il Segreto del 9 e del 99",
+        icon: "🪄",
+        desc: "Regola del 9 e 99: moltiplica per 10 o 100 e togli il numero stesso (47×99)!",
+        type: "trick_nine",
+        questionsCount: 10,
+        timePerQuestion: 15
+    },
+    {
+        id: 15,
+        worldId: 3,
+        worldName: "Mondo 3: L'Accademia dei Trucchi Mentali",
+        name: "L'Illuminazione delle Percentuali",
+        icon: "🎯",
+        desc: "Proprietà commutativa inversa: X% di Y = Y% di X (16% di 25 = 25% di 16 = 4)!",
+        type: "trick_percent",
+        questionsCount: 10,
+        timePerQuestion: 15
+    },
+
+    // ===== MONDO 4: L'OLIMPO DEGLI INGEGNERI SUPREMI (Livelli 16-20) =====
+    {
+        id: 16,
+        worldId: 4,
+        worldName: "Mondo 4: L'Olimpo degli Ingegneri Supremi",
+        name: "La Furia delle Divisioni Rapide",
+        icon: "⚡",
+        desc: "Dividi per 5 (raddoppia e togli lo zero) e per 25 (quadruplica e togli 2 zeri)!",
+        type: "trick_div5_25",
+        questionsCount: 10,
+        timePerQuestion: 15
+    },
+    {
+        id: 17,
+        worldId: 4,
+        worldName: "Mondo 4: L'Olimpo degli Ingegneri Supremi",
+        name: "L'Alchimia dei Prodotti Notevoli",
         icon: "💎",
-        desc: "Prodotti notevoli: (a+b)(a-b) = a² - b² simmetrici attorno al tondo",
+        desc: "Prodotti notevoli: (c - d)(c + d) = c² - d² attorno al tondo centrale!",
         type: "trick_diff_squares",
+        questionsCount: 10,
+        timePerQuestion: 16
+    },
+    {
+        id: 18,
+        worldId: 4,
+        worldName: "Mondo 4: L'Olimpo degli Ingegneri Supremi",
+        name: "La Galassia Vedica (Base 100)",
+        icon: "🪐",
+        desc: "Metodo Vedico: moltiplicazioni attorno a Base 100 con scarti ed eccedenze!",
+        type: "trick_base100",
         questionsCount: 10,
         timePerQuestion: 18
     },
     {
-        id: 15,
-        name: "Gran Boss Matematico AAA",
+        id: 19,
+        worldId: 4,
+        worldName: "Mondo 4: L'Olimpo degli Ingegneri Supremi",
+        name: "Il Colosseo dei Riflessi (Speed Titan)",
+        icon: "⚔️",
+        desc: "Sfida al cardiopalma: tutti i calcoli e trucchi con soli 8 secondi a quesito!",
+        type: "speed_titan",
+        questionsCount: 12,
+        timePerQuestion: 8
+    },
+    {
+        id: 20,
+        worldId: 4,
+        worldName: "Mondo 4: L'Olimpo degli Ingegneri Supremi",
+        name: "Gran Boss Finale: Laurea Ingegneristica",
         icon: "👑",
-        desc: "La Sfida Suprema per veri ingegneri con tutti i trucchi mentali!",
-        type: "trick_boss",
+        desc: "La prova d'onore definitiva! 15 calcoli di livello eccelso per la Laurea!",
+        type: "grand_boss_engineer",
         questionsCount: 15,
-        timePerQuestion: 16
+        timePerQuestion: 15
     }
 ];
 
@@ -163,12 +254,14 @@ const TROPHIES = [
     { id: 'fulmine', name: 'Lampo di Genio', icon: '⚡', desc: 'Rispondi correttamente in meno di 2 secondi' },
     { id: 'combo_5', name: 'Combo Master', icon: '🔥', desc: 'Raggiungi una serie di 5 risposte corrette di fila' },
     { id: 'studioso', name: 'Occhio Attento', icon: '💡', desc: 'Consulta l\'aiuto didattico o un trucco magico' },
-    { id: 'campione_tabelline', name: 'Mago delle Tabelline', icon: '🧙‍♂️', desc: 'Completa i primi 5 livelli dell\'avventura' },
+    { id: 'campione_tabelline', name: 'Mago delle Tabelline', icon: '🧙‍♂️', desc: 'Conquista tutti i 5 livelli del Mondo 1' },
+    { id: 'maestro_operazioni', name: 'Stratega delle 4 Operazioni', icon: '🌊', desc: 'Conquista tutti i livelli del Mondo 2' },
+    { id: 'mago_algebrico', name: 'Alchimista dei Trucchi', icon: '⚡', desc: 'Conquista tutti i livelli del Mondo 3' },
     { id: 'mago_11', name: 'Mago dell\'11', icon: '⚡', desc: 'Risolvi un calcolo per 11 a due cifre' },
     { id: 're_quadrati', name: 'Re dei Quadrati', icon: '🔥', desc: 'Calcola un quadrato terminante per 5 a mente' },
     { id: 'mente_vedica', name: 'Mente Vedica', icon: '🪐', desc: 'Risolvi un calcolo vicino a 100 col metodo vedico' },
-    { id: 'ingegnere_capo', name: 'Ingegnere Supremo', icon: '🎓', desc: 'Completa tutti i 15 livelli dell\'Avventura' },
-    { id: 'gran_maestro', name: 'Gran Maestro', icon: '👑', desc: 'Ottieni 3 stelle in tutti i livelli' },
+    { id: 'ingegnere_capo', name: 'Ingegnere Supremo', icon: '🎓', desc: 'Completa tutti i 20 livelli dell\'Avventura' },
+    { id: 'gran_maestro', name: 'Gran Maestro Assoluto', icon: '👑', desc: 'Ottieni 3 stelle d\'oro in tutti i 20 livelli (60 stelle!)' },
     { id: 'maratona_50', name: 'Cento di Questi Calcoli', icon: '🏅', desc: 'Risolvi oltre 50 calcoli totali con successo' }
 ];
 
@@ -206,7 +299,7 @@ const AVATAR_CATALOG = [
         icon: '🤖',
         title: 'Processore Quantistico',
         rarity: 'rare',
-        reqStars: 5,
+        reqStars: 6,
         desc: 'Elabora le tabelline a frequenza di clock supersonica.'
     },
     {
@@ -215,7 +308,7 @@ const AVATAR_CATALOG = [
         icon: '🥷',
         title: 'Ombra Fulminea dei Calcoli',
         rarity: 'rare',
-        reqStars: 10,
+        reqStars: 12,
         desc: 'Colpisce il risultato prima ancora che il timer scenda.'
     },
     {
@@ -224,7 +317,7 @@ const AVATAR_CATALOG = [
         icon: '🦉',
         title: 'Scienziato e Maestro di Logica',
         rarity: 'rare',
-        reqStars: 15,
+        reqStars: 18,
         desc: 'Datemi una tabellina e solleverò il mondo!'
     },
     {
@@ -233,7 +326,7 @@ const AVATAR_CATALOG = [
         icon: '🐲',
         title: 'Signore dei Grandi Boss',
         rarity: 'epic',
-        reqStars: 20,
+        reqStars: 26,
         desc: 'Brucia le moltiplicazioni complesse senza alcuna esitazione.'
     },
     {
@@ -242,7 +335,7 @@ const AVATAR_CATALOG = [
         icon: '🦄',
         title: 'Incantatrice di Numeri',
         rarity: 'epic',
-        reqStars: 25,
+        reqStars: 34,
         desc: 'Illumina le combinazioni segrete e la matematica vedica.'
     },
     {
@@ -251,7 +344,7 @@ const AVATAR_CATALOG = [
         icon: '⚡',
         title: 'Dio della Velocità Mentale',
         rarity: 'epic',
-        reqStars: 30,
+        reqStars: 42,
         desc: 'Scatena saette di precisione e combo moltiplicatrici.'
     },
     {
@@ -260,7 +353,7 @@ const AVATAR_CATALOG = [
         icon: '🦖',
         title: 'Forza Titanica dei Calcoli',
         rarity: 'epic',
-        reqStars: 35,
+        reqStars: 50,
         desc: 'Spazza via anche i quadrati e le basi 100 più temibili.'
     },
     {
@@ -269,7 +362,7 @@ const AVATAR_CATALOG = [
         icon: '🎓',
         title: 'Architetto della Matematica AAA',
         rarity: 'legendary',
-        reqStars: 40,
+        reqStars: 54,
         desc: 'Mente scientifica impeccabile e progettista di soluzioni.'
     },
     {
@@ -278,7 +371,7 @@ const AVATAR_CATALOG = [
         icon: '👑',
         title: 'Sovrano Eterno dei Numeri',
         rarity: 'legendary',
-        reqStars: 45,
+        reqStars: 60,
         desc: 'La leggenda vivente: 3 stelle d\'oro in ogni singolo livello.'
     }
 ];
@@ -844,10 +937,10 @@ class GameManager {
             if (av.reqStars <= totalStars) {
                 qualifies = true;
             }
-            if (av.id === 'engineer' && (this.saveData.unlockedLevel > 15 || totalStars >= 40)) {
+            if (av.id === 'engineer' && (this.saveData.unlockedLevel > 20 || totalStars >= 54)) {
                 qualifies = true;
             }
-            if (av.id === 'grandmaster' && totalStars >= 45) {
+            if (av.id === 'grandmaster' && totalStars >= 60) {
                 qualifies = true;
             }
 
@@ -1133,33 +1226,73 @@ class GameManager {
 
     renderLevelsMap() {
         const container = document.getElementById('levels-grid-container');
+        if (!container) return;
         container.innerHTML = '';
+
+        const worldsData = {
+            1: {
+                title: "Mondo 1: L'Isola delle Tabelline Base",
+                tag: "Capitolo 1 — Fondamenta",
+                desc: "Padroneggia le 12 tabelline, i ritmi numerici e il concetto fondamentale di moltiplicazione.",
+                levels: [1, 2, 3, 4, 5],
+                class: "world-1"
+            },
+            2: {
+                title: "Mondo 2: Il Labirinto delle 4 Operazioni",
+                tag: "Capitolo 2 — Aritmetica Fluida",
+                desc: "Addizioni veloci, sottrazioni con prestiti, divisioni esatte e ordini di grandezza con zeri.",
+                levels: [6, 7, 8, 9, 10],
+                class: "world-2"
+            },
+            3: {
+                title: "Mondo 3: L'Accademia dei Trucchi Mentali",
+                tag: "Capitolo 3 — Segreti Algebrici",
+                desc: "Moltiplicazioni fulminee per 11, quadrati del 5, raddoppia & dimezza, regola del 99 e percentuali.",
+                levels: [11, 12, 13, 14, 15],
+                class: "world-3"
+            },
+            4: {
+                title: "Mondo 4: L'Olimpo degli Ingegneri Matematici",
+                tag: "Capitolo 4 — Gran Finale Epico",
+                desc: "Divisioni rapide, prodotti notevoli (a² - b²), matematica vedica e la Sfida Suprema della Laurea!",
+                levels: [16, 17, 18, 19, 20],
+                class: "world-4"
+            }
+        };
 
         ADVENTURE_LEVELS.forEach(lvl => {
             const isUnlocked = lvl.id <= this.saveData.unlockedLevel;
             const stars = this.saveData.stars[lvl.id] || 0;
             const highScore = this.saveData.highScores[lvl.id] || null;
 
-            // Sezione Lega dei Maghi per livelli 10-15
-            if (lvl.id === 10) {
-                const divider = document.createElement('div');
-                divider.style.gridColumn = '1 / -1';
-                divider.style.textAlign = 'center';
-                divider.style.margin = '28px 0 10px';
-                divider.style.padding = '14px 20px';
-                divider.style.background = 'linear-gradient(135deg, #1e1b4b 0%, #4338ca 100%)';
-                divider.style.color = '#fbbf24';
-                divider.style.borderRadius = '18px';
-                divider.style.fontWeight = '900';
-                divider.style.fontSize = '1.15rem';
-                divider.style.boxShadow = '0 8px 20px rgba(30, 27, 75, 0.35)';
-                divider.style.border = '2px solid rgba(251, 191, 36, 0.4)';
-                divider.innerHTML = `👑 LEGA DEI GRANDI MAGHI — CALCOLI COMPLESSI & TRUCCHI MENTALI ⚡`;
-                container.appendChild(divider);
+            // Inserisci il Banner del Mondo al primo livello di ciascun capitolo
+            if (lvl.id === 1 || lvl.id === 6 || lvl.id === 11 || lvl.id === 16) {
+                const w = worldsData[lvl.worldId];
+                if (w) {
+                    const worldStars = w.levels.reduce((acc, lid) => acc + (this.saveData.stars[lid] || 0), 0);
+                    const isWorldUnlocked = lvl.id <= this.saveData.unlockedLevel;
+                    
+                    const banner = document.createElement('div');
+                    banner.className = `world-section-banner world-banner ${w.class}`;
+                    banner.innerHTML = `
+                        <div class="world-banner-info">
+                            <span class="world-banner-tag">${w.tag}</span>
+                            <h3 class="world-banner-title">${w.title}</h3>
+                            <p class="world-banner-desc">${w.desc}</p>
+                        </div>
+                        <div class="world-banner-status">
+                            <span>⭐ ${worldStars} / 15</span>
+                            <span>•</span>
+                            <span>${isWorldUnlocked ? '🔓 Accessibile' : '🔒 Bloccato'}</span>
+                        </div>
+                    `;
+                    container.appendChild(banner);
+                }
             }
 
+            const isBoss = (lvl.id === 5 || lvl.id === 10 || lvl.id === 20);
             const card = document.createElement('div');
-            card.className = `level-card ${isUnlocked ? 'unlocked' : 'locked'} ${lvl.id >= 10 ? 'grand-master' : ''}`;
+            card.className = `level-card ${isUnlocked ? 'unlocked' : 'locked'} world-${lvl.worldId} ${isBoss ? 'boss-card' : ''} ${lvl.id >= 16 ? 'grand-master' : ''}`;
 
             let starsHtml = '';
             for (let i = 1; i <= 3; i++) {
@@ -1283,18 +1416,28 @@ class GameManager {
                     const b = Math.floor(Math.random() * (a - 10)) + 5;
                     q = { num1: a, num2: b, op: '-', answer: a - b };
                 }
+            } else if (lvl.type === 'powers_ten') {
+                q = this.generateQuestionPowersTen();
             } else if (lvl.type === 'trick_11') {
                 q = this.generateTrickQuestion11();
             } else if (lvl.type === 'trick_square5') {
                 q = this.generateTrickQuestionSquare5();
-            } else if (lvl.type === 'trick_base100') {
-                q = this.generateTrickQuestionBase100();
             } else if (lvl.type === 'trick_double_halve') {
                 q = this.generateTrickQuestionDoubleHalve();
+            } else if (lvl.type === 'trick_nine') {
+                q = this.generateTrickQuestionNine();
+            } else if (lvl.type === 'trick_percent') {
+                q = this.generateTrickQuestionPercent();
+            } else if (lvl.type === 'trick_div5_25') {
+                q = this.generateTrickQuestionDiv5_25();
             } else if (lvl.type === 'trick_diff_squares') {
                 q = this.generateTrickQuestionDiffSquares();
-            } else if (lvl.type === 'trick_boss') {
-                q = this.generateTrickQuestionBoss();
+            } else if (lvl.type === 'trick_base100') {
+                q = this.generateTrickQuestionBase100();
+            } else if (lvl.type === 'speed_titan') {
+                q = this.generateQuestionSpeedTitan();
+            } else if (lvl.type === 'grand_boss_engineer' || lvl.type === 'trick_boss') {
+                q = this.generateQuestionGrandBoss();
             }
             questions.push(q);
         }
@@ -1579,6 +1722,110 @@ class GameManager {
             () => this.generateTrickQuestionDiv5_25()
         ];
         const fn = generators[Math.floor(Math.random() * generators.length)];
+        return fn();
+    }
+
+    generateQuestionPowersTen() {
+        const isMult = Math.random() > 0.4;
+        if (isMult) {
+            const simpleA = Math.floor(Math.random() * 8) + 2; // 2 to 9
+            const simpleB = Math.floor(Math.random() * 8) + 2; // 2 to 9
+            const choice = Math.floor(Math.random() * 3);
+            let a, b;
+            if (choice === 0) {
+                a = simpleA * 10;
+                b = simpleB * 10;
+            } else if (choice === 1) {
+                a = simpleA * 100;
+                b = simpleB;
+            } else {
+                a = simpleA * 10;
+                b = simpleB;
+            }
+            const ans = a * b;
+            return {
+                num1: a,
+                num2: b,
+                op: '×',
+                answer: ans,
+                trickType: 'powers_ten',
+                trickInfo: {
+                    title: `Zeri e Ordini di Grandezza: ${a} × ${b}`,
+                    formula: `(A × 10^m) × (B × 10^n) = (A × B) × 10^(m+n)`,
+                    steps: [
+                        `Moltiplica le cifre significative: ${simpleA} × ${simpleB} = <strong>${simpleA * simpleB}</strong>`,
+                        `Conta tutti gli zeri e accodali alla fine del risultato!`
+                    ],
+                    conclusion: `Risultato: <strong>${a} × ${b} = ${ans}</strong> 🌋`
+                }
+            };
+        } else {
+            const divisorBase = Math.floor(Math.random() * 8) + 2;
+            const quotientBase = Math.floor(Math.random() * 8) + 2;
+            const hasZero = Math.random() > 0.4;
+            const b = divisorBase * (hasZero ? 10 : 1);
+            const ans = quotientBase * (hasZero ? 10 : 100);
+            const a = b * ans;
+            return {
+                num1: a,
+                num2: b,
+                op: '÷',
+                answer: ans,
+                trickType: 'powers_ten',
+                trickInfo: {
+                    title: `Divisione con Zeri: ${a} ÷ ${b}`,
+                    formula: `Semplifica gli zeri comuni al dividendo e al divisore`,
+                    steps: [
+                        `Semplifica gli zeri: ${a} ÷ ${b} equivale a ${Math.round(a / (hasZero ? 10 : 1))} ÷ ${divisorBase}`,
+                        `Esegui la divisione sulle cifre significative: <strong>${ans}</strong>`
+                    ],
+                    conclusion: `Risultato: <strong>${a} ÷ ${b} = ${ans}</strong> 🌋`
+                }
+            };
+        }
+    }
+
+    generateQuestionSpeedTitan() {
+        const pool = [
+            () => this.generateTrickQuestion11(),
+            () => this.generateTrickQuestionSquare5(),
+            () => this.generateTrickQuestionDoubleHalve(),
+            () => this.generateTrickQuestionPercent(),
+            () => this.generateQuestionPowersTen(),
+            () => {
+                const a = Math.floor(Math.random() * 9) + 3;
+                const b = Math.floor(Math.random() * 9) + 3;
+                return { num1: a, num2: b, op: '×', answer: a * b };
+            },
+            () => {
+                const d = Math.floor(Math.random() * 8) + 2;
+                const q = Math.floor(Math.random() * 9) + 2;
+                return { num1: d * q, num2: d, op: '÷', answer: q };
+            }
+        ];
+        const fn = pool[Math.floor(Math.random() * pool.length)];
+        return fn();
+    }
+
+    generateQuestionGrandBoss() {
+        const pool = [
+            () => this.generateTrickQuestion11(),
+            () => this.generateTrickQuestionSquare5(),
+            () => this.generateTrickQuestionBase100(),
+            () => this.generateTrickQuestionDoubleHalve(),
+            () => this.generateTrickQuestionDiffSquares(),
+            () => this.generateTrickQuestionNine(),
+            () => this.generateTrickQuestionPercent(),
+            () => this.generateTrickQuestionDiv5_25(),
+            () => this.generateQuestionPowersTen(),
+            () => {
+                const bigTables = [11, 12, 7, 8, 9];
+                const a = bigTables[Math.floor(Math.random() * bigTables.length)];
+                const b = Math.floor(Math.random() * 12) + 2;
+                return { num1: a, num2: b, op: '×', answer: a * b };
+            }
+        ];
+        const fn = pool[Math.floor(Math.random() * pool.length)];
         return fn();
     }
 
@@ -2076,7 +2323,7 @@ class GameManager {
             }
 
             // Bonus XP Vittoria Livello
-            const levelBonusXP = this.currentMode === 'adventure' ? (this.currentLevelConfig.id >= 15 ? 300 : 120) : 60;
+            const levelBonusXP = this.currentMode === 'adventure' ? (this.currentLevelConfig.id >= 20 ? 500 : (this.currentLevelConfig.id >= 16 ? 250 : 120)) : 60;
             this.addXP(levelBonusXP, 'Vittoria Sfida');
 
             // Salvataggio Livello e sblocco successivo
@@ -2103,15 +2350,18 @@ class GameManager {
                     this.saveData.unlockedLevel = lvlId + 1;
                 }
 
-                // Trofeo primo passo
+                // Trofei di Progressione per Mondi
                 if (lvlId === 1) this.unlockTrophy('primo_passo');
                 if (lvlId >= 5) this.unlockTrophy('campione_tabelline');
+                if (lvlId >= 10) this.unlockTrophy('maestro_operazioni');
+                if (lvlId >= 15) this.unlockTrophy('mago_algebrico');
+                if (lvlId >= 20) {
+                    this.unlockTrophy('ingegnere_capo');
+                    this.showToastNotification('🎓 CONGRATULAZIONI! HAI COMPLETATO TUTTI I 20 LIVELLI! SEI UN INGEGNERE SUPREMO! 👑');
+                }
                 if (accuracy === 100) this.unlockTrophy('cecchino');
 
-                // Trofeo Ingegnere Supremo se finisce il livello 15
-                if (lvlId >= 15) this.unlockTrophy('ingegnere_capo');
-
-                // Controlla se tutti i livelli hanno 3 stelle
+                // Controlla se tutti i 20 livelli hanno 3 stelle
                 let allThreeStars = true;
                 for (let k = 1; k <= ADVENTURE_LEVELS.length; k++) {
                     if ((this.saveData.stars[k] || 0) < 3) {
