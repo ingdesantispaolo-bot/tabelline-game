@@ -4,7 +4,11 @@
 class SoundEngine {
     constructor() {
         this.ctx = null;
-        this.enabled = true;
+        let saved = null;
+        try {
+            saved = localStorage.getItem('matemagica_sound_enabled');
+        } catch (e) {}
+        this.enabled = (saved !== null) ? (saved === 'true') : true;
         this.initialized = false;
     }
 
@@ -23,6 +27,9 @@ class SoundEngine {
 
     toggle() {
         this.enabled = !this.enabled;
+        try {
+            localStorage.setItem('matemagica_sound_enabled', this.enabled ? 'true' : 'false');
+        } catch (e) {}
         return this.enabled;
     }
 

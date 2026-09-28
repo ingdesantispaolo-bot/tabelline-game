@@ -18,7 +18,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700;800;900&family=Nunito:wght@600;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=4">
+    <link rel="stylesheet" href="styles.css?v=5">
 </head>
 <body class="dark-theme">
 
@@ -630,45 +630,58 @@
         </div>
     </div>
 
-    <!-- =================== MODALE PUBBLICAZIONE ONLINE =================== -->
+    <!-- =================== MODALE PUBBLICAZIONE & APP PWA =================== -->
     <div class="modal-overlay" id="modal-share">
         <div class="modal-content modal-share-content">
-            <h3 class="modal-title">🌐 Pubblica & Gioca Online Gratis</h3>
-            <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 16px;">Scegli il modo più comodo per pubblicare il gioco o aprirlo sul tuo tablet e smartphone:</p>
+            <h3 class="modal-title">🌐 App Online & Gioca su Tutti i Dispositivi</h3>
+            <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 16px;">Matemagica è pubblicata ufficialmente online e pronta per essere giocata su tablet, smartphone e PC:</p>
             
+            <!-- Box Link Ufficiale & Copia Rapida -->
+            <div class="live-url-card" id="live-url-card">
+                <div class="live-url-header">
+                    <span class="live-status-dot"></span>
+                    <span class="live-status-text">Sito Ufficiale Live (GitHub Pages)</span>
+                </div>
+                <div class="live-url-input-row">
+                    <input type="text" id="live-url-text" class="live-url-input" value="https://ingdesantispaolo-bot.github.io/tabelline-game/" readonly>
+                    <button class="btn-copy-url" id="btn-copy-live-url">📋 Copia Link</button>
+                    <a href="https://ingdesantispaolo-bot.github.io/tabelline-game/" target="_blank" rel="noopener" class="btn-open-url" id="btn-open-live-url" title="Apri in nuova scheda">🚀 Apri</a>
+                </div>
+            </div>
+
+            <!-- Box QR Code per scansione da Tablet / Smartphone -->
+            <div class="qr-code-box">
+                <div class="qr-code-img-wrapper">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=https%3A%2F%2Fingdesantispaolo-bot.github.io%2Ftabelline-game%2F" alt="QR Code Matemagica" class="qr-code-img" loading="lazy">
+                </div>
+                <div class="qr-code-info">
+                    <h4>📲 Inquadra con la Fotocamera</h4>
+                    <p>Punta la fotocamera del tuo <strong>iPad, iPhone o Tablet Android</strong> sul codice QR per aprire subito il gioco!</p>
+                </div>
+            </div>
+
             <div class="share-options-list">
+                <div class="share-opt-card">
+                    <div class="share-opt-icon">🍏</div>
+                    <div class="share-opt-info">
+                        <h4>Come installare su iPad & iPhone (Safari)</h4>
+                        <p>Apri il link in Safari, tocca il tasto <strong>Condividi</strong> (<span style="font-size: 1.1rem;">⎋</span>) e seleziona <strong>"Aggiungi alla schermata Home"</strong> per giocare a schermo intero senza barre del browser!</p>
+                    </div>
+                </div>
+
+                <div class="share-opt-card">
+                    <div class="share-opt-icon">🤖</div>
+                    <div class="share-opt-info">
+                        <h4>Come installare su Android (Chrome)</h4>
+                        <p>Apri il link in Chrome, tocca i tre puntini in alto a destra (<strong>⋮</strong>) e seleziona <strong>"Installa app"</strong> o <strong>"Aggiungi a schermata Home"</strong>.</p>
+                    </div>
+                </div>
+
                 <div class="share-opt-card">
                     <div class="share-opt-icon">⚡</div>
                     <div class="share-opt-info">
-                        <h4>Opzione 1: Vercel (1-Click Deployment)</h4>
-                        <p>Server globale ultra-rapido, HTTPS gratuito e link permanente (es. <code>matemagica.vercel.app</code>).</p>
-                        <span class="share-badge-tag">Consigliato: Doppio click su <strong>pubblica_su_vercel.bat</strong></span>
-                    </div>
-                </div>
-
-                <div class="share-opt-card">
-                    <div class="share-opt-icon">🐙</div>
-                    <div class="share-opt-info">
-                        <h4>Opzione 2: GitHub Pages (Gratis per sempre)</h4>
-                        <p>Carica la cartella su una repository GitHub e attiva <strong>GitHub Pages</strong> dalle impostazioni del repository in 1 minuto.</p>
-                        <span class="share-badge-tag">Guida completa nel file <strong>PUBBLICAZIONE_ONLINE.md</strong></span>
-                    </div>
-                </div>
-
-                <div class="share-opt-card">
-                    <div class="share-opt-icon">📱</div>
-                    <div class="share-opt-info">
-                        <h4>Opzione 3: Link Immediato su Mobile (Tunnel Live)</h4>
-                        <p>Genera subito un link HTTPS da aprire al volo sul tuo telefono o tablet senza creare account.</p>
-                        <span class="share-badge-tag">Doppio click su <strong>condividi_link_immediato.bat</strong></span>
-                    </div>
-                </div>
-
-                <div class="share-opt-card">
-                    <div class="share-opt-icon">📲</div>
-                    <div class="share-opt-info">
-                        <h4>Installa come App Nativa su Tablet/Smartphone (PWA)</h4>
-                        <p>Una volta aperto il link su Safari (iPad/iPhone) o Chrome (Android), tocca <strong>"Condividi" -> "Aggiungi a schermata Home"</strong> per giocare a schermo intero anche 100% offline!</p>
+                        <h4>100% Funzionante anche Offline (PWA)</h4>
+                        <p>Grazie al Service Worker, Matemagica salva le risorse nella memoria del dispositivo e funziona ovunque, anche senza connessione Internet!</p>
                     </div>
                 </div>
             </div>
@@ -707,6 +720,18 @@
                             <div class="profile-xp-bar-fill" id="profile-xp-bar-fill" style="width: 0%;"></div>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <!-- Sincronizzazione Dati / Backup (Esporta / Importa) -->
+            <div class="profile-sync-box">
+                <div class="profile-sync-header">
+                    <span>💾 Trasferimento & Backup Partita</span>
+                </div>
+                <p class="profile-sync-desc">Sposta le tue stelle e i livelli sbloccati su un altro dispositivo (es. da PC a Tablet) con un clic:</p>
+                <div class="profile-sync-buttons">
+                    <button class="btn-sync-action export" id="btn-export-save" title="Copia codice di salvataggio">📤 Esporta Partita</button>
+                    <button class="btn-sync-action import" id="btn-import-save" title="Incolla codice di salvataggio">📥 Importa Partita</button>
                 </div>
             </div>
 
@@ -836,9 +861,9 @@
     </div>
 
     <!-- Script Audio, Effetti e Gioco -->
-    <script src="audio.js?v=4"></script>
-    <script src="confetti.js?v=4"></script>
-    <script src="game.js?v=4"></script>
+    <script src="audio.js?v=5"></script>
+    <script src="confetti.js?v=5"></script>
+    <script src="game.js?v=5"></script>
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {

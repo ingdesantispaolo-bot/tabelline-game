@@ -586,12 +586,16 @@ class GameManager {
             this.showScreen('home');
         });
 
-        // Suono Toggle
+        // Suono Toggle con persistenza salvata
         const btnSound = document.getElementById('btn-toggle-sound');
-        btnSound.addEventListener('click', () => {
-            const enabled = window.soundEngine.toggle();
-            btnSound.textContent = enabled ? '🔊' : '🔇';
-        });
+        if (btnSound) {
+            btnSound.textContent = window.soundEngine.enabled ? '🔊' : '🔇';
+            btnSound.addEventListener('click', () => {
+                const enabled = window.soundEngine.toggle();
+                btnSound.textContent = enabled ? '🔊' : '🔇';
+                this.showToastNotification(enabled ? 'Audio Attivato 🔊' : 'Audio Disattivato 🔇');
+            });
+        }
 
         // Modal Trofei
         document.getElementById('btn-view-trophies').addEventListener('click', () => {
@@ -740,6 +744,72 @@ class GameManager {
             });
         }
 
+        // Copia Link Live da Modale Condivisione
+        const btnCopyUrl = document.getElementById('btn-copy-live-url');
+        if (btnCopyUrl) {
+            btnCopyUrl.addEventListener('click', () => {
+                const inputEl = document.getElementById('live-url-text');
+                const url = inputEl ? inputEl.value : 'https://ingdesantispaolo-bot.github.io/tabelline-game/';
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(url).then(() => {
+                        window.soundEngine.playClick();
+                        btnCopyUrl.textContent = '✅ Copiato!';
+                        this.showToastNotification('Link ufficiale copiato negli appunti! 📋');
+                        setTimeout(() => { btnCopyUrl.textContent = '📋 Copia Link'; }, 2200);
+                    }).catch(() => {
+                        this.showToastNotification('Seleziona e copia il link nel riquadro');
+                    });
+                } else {
+                    this.showToastNotification('Seleziona e copia il link nel riquadro');
+                }
+            });
+        }
+
+        // Esporta e Importa Salvataggio (Sync Multipiattaforma)
+        const btnExportSave = document.getElementById('btn-export-save');
+        if (btnExportSave) {
+            btnExportSave.addEventListener('click', () => {
+                window.soundEngine.playClick();
+                const jsonStr = JSON.stringify(this.saveData);
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(jsonStr).then(() => {
+                        this.showToastNotification('💾 Partita salvata negli appunti! Incollala sul tuo tablet.');
+                    }).catch(() => {
+                        prompt('Ecco il tuo codice di salvataggio (Ctrl+C per copiare):', jsonStr);
+                    });
+                } else {
+                    prompt('Ecco il tuo codice di salvataggio (Ctrl+C per copiare):', jsonStr);
+                }
+            });
+        }
+
+        const btnImportSave = document.getElementById('btn-import-save');
+        if (btnImportSave) {
+            btnImportSave.addEventListener('click', () => {
+                window.soundEngine.playClick();
+                const raw = prompt('Incolla qui il codice di salvataggio (JSON) da ripristinare:');
+                if (raw) {
+                    try {
+                        const parsed = JSON.parse(raw.trim());
+                        if (parsed && (parsed.stars !== undefined || parsed.unlockedLevel !== undefined)) {
+                            this.saveData = Object.assign(this.loadSaveData(), parsed);
+                            this.saveGame();
+                            this.updateHeaderStats();
+                            this.renderLevelsMap();
+                            this.renderTrophiesModal();
+                            this.renderAvatarCatalog();
+                            if (window.soundEngine && window.soundEngine.playVictory) window.soundEngine.playVictory();
+                            this.showToastNotification('🎉 Partita ripristinata con successo!');
+                        } else {
+                            this.showToastNotification('Formato dati non valido ❌');
+                        }
+                    } catch (e) {
+                        this.showToastNotification('Errore di lettura: JSON non valido ❌');
+                    }
+                }
+            });
+        }
+
         // Chiusura modali cliccando all'esterno sull'overlay
         [this.modalShare, this.modalTrophies, this.modalVisualHelp, this.modalProfile, this.modalRecords, this.modalDiploma, this.modalLevelUp].forEach(modal => {
             if (modal) {
@@ -811,6 +881,8 @@ class GameManager {
                 this.startAdventureLevel(this.currentLevelConfig.id);
             } else if (this.currentMode === 'gym') {
                 this.startGymMode();
+            } else if (this.currentMode === 'trick_training') {
+                this.startTrickTraining(this.currentTrickType || '11');
             } else {
                 this.startSpeedrunMode();
             }
@@ -825,6 +897,10 @@ class GameManager {
                 } else {
                     this.showScreen('levels');
                 }
+            } else if (this.currentMode === 'trick_training') {
+                this.showScreen('academy');
+            } else if (this.currentMode === 'gym') {
+                this.showScreen('gym');
             } else {
                 this.showScreen('home');
             }
@@ -1831,6 +1907,7 @@ class GameManager {
 
     startTrickTraining(trickType) {
         this.currentMode = 'trick_training';
+        this.currentTrickType = trickType;
         this.questions = [];
         for (let i = 0; i < 10; i++) {
             let q = null;
