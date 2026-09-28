@@ -18,7 +18,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700;800;900&family=Nunito:wght@600;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=5">
+    <link rel="stylesheet" href="styles.css?v=6">
 </head>
 <body class="dark-theme">
 
@@ -125,6 +125,15 @@
                     <h2>Sfida a Tempo Boss</h2>
                     <p>20 calcoli a raffica: metti alla prova i tuoi riflessi per battere il tuo record personale!</p>
                     <button class="btn-play-card">Sfida il Timer ➔</button>
+                </div>
+
+                <!-- Modalità Duello 1 vs 1 (Tablet Split-Screen) -->
+                <div class="mode-card duel" id="btn-mode-duel">
+                    <div class="mode-badge">👥 2 Giocatori (Tablet/PC)</div>
+                    <div class="mode-icon">⚔️</div>
+                    <h2>Duello 1 vs 1 Split-Screen</h2>
+                    <p>Sfida un amico, fratello o genitore sullo stesso schermo! Chi tocca per primo la risposta esatta conquista la corona!</p>
+                    <button class="btn-play-card">Inizia Duello ➔</button>
                 </div>
             </div>
 
@@ -592,6 +601,240 @@
             </div>
         </section>
 
+        <!-- =================== SCHERMO 6: DUELLO 1 VS 1 SPLIT-SCREEN (TABLET / PC) =================== -->
+        <section id="screen-duel" class="screen">
+            <!-- VISTA 1: LOBBY PRE-MATCH -->
+            <div id="duel-lobby-view" class="duel-subview active">
+                <div class="duel-lobby-header">
+                    <button class="btn-back-header" id="btn-back-duel">❮ Torna al Menu</button>
+                    <div class="duel-badge-pill">⚡ MULTIPLAYER LOCALE SAME-DEVICE</div>
+                    <h2 class="duel-title">⚔️ Duello 1 vs 1 Split-Screen</h2>
+                    <p class="duel-subtitle">Appoggia il tablet sul tavolo tra di voi o giocate fianco a fianco su PC! Rispondete insieme alla stessa operazione: chi tocca per primo la risposta corretta conquista il punto!</p>
+                </div>
+
+                <div class="duel-lobby-card">
+                    <!-- Configurazione Giocatori (P1 Blu vs P2 Rosso) -->
+                    <div class="duel-players-grid">
+                        <!-- Giocatore 1 (Blu, Lato Inferiore) -->
+                        <div class="duel-player-config-card p1-config">
+                            <div class="p-config-tag tag-p1">GIOCATORE 1 (BLU - Sotto)</div>
+                            <div class="p-avatar-main-wrapper">
+                                <span class="p-avatar-icon" id="p1-chosen-avatar">🧑‍🚀</span>
+                            </div>
+                            <div class="p-avatar-picker-row" id="p1-avatar-picker-row">
+                                <button type="button" class="p-avatar-btn active" data-player="1" data-avatar="🧑‍🚀">🧑‍🚀</button>
+                                <button type="button" class="p-avatar-btn" data-player="1" data-avatar="🧙‍♂️">🧙‍♂️</button>
+                                <button type="button" class="p-avatar-btn" data-player="1" data-avatar="⚡">⚡</button>
+                                <button type="button" class="p-avatar-btn" data-player="1" data-avatar="🦁">🦁</button>
+                                <button type="button" class="p-avatar-btn" data-player="1" data-avatar="🎓">🎓</button>
+                                <button type="button" class="p-avatar-btn" data-player="1" data-avatar="💎">💎</button>
+                            </div>
+                            <input type="text" id="p1-name-input" class="duel-player-input" value="Giocatore 1 (Blu)" maxlength="16" placeholder="Nome Giocatore 1">
+                            <div class="duel-control-tip">Posizione: Lato Inferiore • Touch o Tasti 1-4</div>
+                        </div>
+
+                        <!-- Divisore VS Grafico -->
+                        <div class="duel-vs-divider">
+                            <div class="vs-circle">VS</div>
+                            <div class="vs-lightning">⚡</div>
+                        </div>
+
+                        <!-- Giocatore 2 (Rosso, Lato Superiore 180°) -->
+                        <div class="duel-player-config-card p2-config">
+                            <div class="p-config-tag tag-p2">GIOCATORE 2 (ROSSO - Sopra)</div>
+                            <div class="p-avatar-main-wrapper">
+                                <span class="p-avatar-icon" id="p2-chosen-avatar">🦊</span>
+                            </div>
+                            <div class="p-avatar-picker-row" id="p2-avatar-picker-row">
+                                <button type="button" class="p-avatar-btn active" data-player="2" data-avatar="🦊">🦊</button>
+                                <button type="button" class="p-avatar-btn" data-player="2" data-avatar="🐲">🐲</button>
+                                <button type="button" class="p-avatar-btn" data-player="2" data-avatar="🦄">🦄</button>
+                                <button type="button" class="p-avatar-btn" data-player="2" data-avatar="🦖">🦖</button>
+                                <button type="button" class="p-avatar-btn" data-player="2" data-avatar="🤖">🤖</button>
+                                <button type="button" class="p-avatar-btn" data-player="2" data-avatar="👑">👑</button>
+                            </div>
+                            <input type="text" id="p2-name-input" class="duel-player-input" value="Giocatore 2 (Rosso)" maxlength="16" placeholder="Nome Giocatore 2">
+                            <div class="duel-control-tip">Posizione: Lato Superiore (Capovolto) • Touch o Tasti 7-0</div>
+                        </div>
+                    </div>
+
+                    <!-- Impostazioni Partita -->
+                    <div class="duel-settings-section">
+                        <!-- Selezione Categoria Operazioni -->
+                        <div class="duel-setting-group">
+                            <label class="duel-setting-label">🎯 Tipologia di Calcoli:</label>
+                            <div class="duel-pill-group" id="duel-category-group">
+                                <button type="button" class="duel-pill active" data-type="tables">✖️ Tabelline (2-10)</button>
+                                <button type="button" class="duel-pill" data-type="addsub">➕➖ Somme & Sottrazioni</button>
+                                <button type="button" class="duel-pill" data-type="divisions">➗ Divisioni Esatte</button>
+                                <button type="button" class="duel-pill" data-type="tricks">🧠 Trucchi Mentali Veloci</button>
+                                <button type="button" class="duel-pill" data-type="mixed">🔥 Gran Misto (Tutto)</button>
+                            </div>
+                        </div>
+
+                        <!-- Traguardo Punti -->
+                        <div class="duel-setting-group">
+                            <label class="duel-setting-label">🏆 Punti per la Vittoria:</label>
+                            <div class="duel-pill-group" id="duel-points-group">
+                                <button type="button" class="duel-pill" data-points="5">⚡ 5 Punti (Sprint Rapido)</button>
+                                <button type="button" class="duel-pill active" data-points="10">⚔️ 10 Punti (Classico)</button>
+                                <button type="button" class="duel-pill" data-points="15">👑 15 Punti (Epico)</button>
+                            </div>
+                        </div>
+
+                        <!-- Switch Capovolgimento 180° Tablet Tabletop -->
+                        <div class="duel-setting-group duel-orientation-toggle-group">
+                            <label class="duel-setting-label">🔄 Orientamento Tablet Faccia a Faccia:</label>
+                            <div class="duel-flip-toggle-wrapper">
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="duel-check-flip-p2" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                                <span class="toggle-label" id="duel-flip-label">Capovolgi Giocatore 2 di 180° (Perfetto con tablet appoggiato orizzontale sul tavolo)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn-start-duel-action" id="btn-start-duel">⚔️ ENTRA NELL'ARENA DI DUELLO ➔</button>
+                </div>
+            </div>
+
+            <!-- VISTA 2: ARENA DI DUELLO (SPLIT-SCREEN) -->
+            <div id="duel-arena-view" class="duel-subview">
+                <div class="duel-arena-container" id="duel-arena-container">
+                    
+                    <!-- ZONA SUPERIORE: GIOCATORE 2 (ROSSO / CAPOVOLTO 180°) -->
+                    <div class="duel-player-zone p2-zone flipped-180" id="duel-p2-zone">
+                        <!-- Overlay Blocco Errore (Anti-Spam 1.5s) -->
+                        <div class="zone-lockout-overlay" id="p2-lockout-overlay">
+                            <div class="lockout-badge">⛔ RISPOSTA SBAGLIATA!</div>
+                            <div class="lockout-text">BLOCCATO <span class="lockout-countdown" id="p2-lockout-timer">1.5s</span></div>
+                            <div class="lockout-sub">L'avversario ha tempo per rispondere!</div>
+                        </div>
+                        
+                        <!-- Header Giocatore 2 -->
+                        <div class="duel-zone-header">
+                            <div class="player-info-badge">
+                                <span class="p-avatar-badge" id="arena-p2-avatar">🦊</span>
+                                <div class="p-details">
+                                    <div class="p-name" id="arena-p2-name">Giocatore 2</div>
+                                    <div class="p-score-pill">Punti: <strong id="arena-p2-score">0</strong></div>
+                                </div>
+                            </div>
+                            <div class="p-points-progress" id="arena-p2-dots"></div>
+                        </div>
+
+                        <!-- Box Formula -->
+                        <div class="duel-equation-box">
+                            <div class="duel-question-text" id="arena-p2-question">7 × 8 = ?</div>
+                        </div>
+
+                        <!-- 4 Pulsanti Riflesso Arcade -->
+                        <div class="duel-options-grid" id="arena-p2-options">
+                            <button type="button" class="duel-opt-btn p2-btn" data-index="0" id="p2-btn-0">-</button>
+                            <button type="button" class="duel-opt-btn p2-btn" data-index="1" id="p2-btn-1">-</button>
+                            <button type="button" class="duel-opt-btn p2-btn" data-index="2" id="p2-btn-2">-</button>
+                            <button type="button" class="duel-opt-btn p2-btn" data-index="3" id="p2-btn-3">-</button>
+                        </div>
+                    </div>
+
+                    <!-- DIVISORE CENTRALE & CRUSCOTTO HUD -->
+                    <div class="duel-center-divider" id="duel-center-divider">
+                        <button type="button" class="duel-hud-btn" id="btn-arena-flip" title="Ruota / Raddrizza vista P2">🔄 Ruota P2</button>
+                        <div class="duel-hud-scoreboard">
+                            <span class="hud-score hud-p2" id="hud-score-p2">0</span>
+                            <span class="hud-vs">⚔️</span>
+                            <span class="hud-score hud-p1" id="hud-score-p1">0</span>
+                        </div>
+                        <div class="duel-hud-target" id="hud-target-text">Traguardo: 10 pt</div>
+                        <button type="button" class="duel-hud-btn exit" id="btn-arena-exit" title="Esci dal duello">✕ Esci</button>
+                    </div>
+
+                    <!-- ZONA INFERIORE: GIOCATORE 1 (BLU / ORIENTAMENTO DRITTO) -->
+                    <div class="duel-player-zone p1-zone" id="duel-p1-zone">
+                        <!-- Overlay Blocco Errore (Anti-Spam 1.5s) -->
+                        <div class="zone-lockout-overlay" id="p1-lockout-overlay">
+                            <div class="lockout-badge">⛔ RISPOSTA SBAGLIATA!</div>
+                            <div class="lockout-text">BLOCCATO <span class="lockout-countdown" id="p1-lockout-timer">1.5s</span></div>
+                            <div class="lockout-sub">L'avversario ha tempo per rispondere!</div>
+                        </div>
+
+                        <!-- 4 Pulsanti Riflesso Arcade -->
+                        <div class="duel-options-grid" id="arena-p1-options">
+                            <button type="button" class="duel-opt-btn p1-btn" data-index="0" id="p1-btn-0">-</button>
+                            <button type="button" class="duel-opt-btn p1-btn" data-index="1" id="p1-btn-1">-</button>
+                            <button type="button" class="duel-opt-btn p1-btn" data-index="2" id="p1-btn-2">-</button>
+                            <button type="button" class="duel-opt-btn p1-btn" data-index="3" id="p1-btn-3">-</button>
+                        </div>
+
+                        <!-- Box Formula -->
+                        <div class="duel-equation-box">
+                            <div class="duel-question-text" id="arena-p1-question">7 × 8 = ?</div>
+                        </div>
+
+                        <!-- Header Giocatore 1 -->
+                        <div class="duel-zone-header">
+                            <div class="player-info-badge">
+                                <span class="p-avatar-badge" id="arena-p1-avatar">🧑‍🚀</span>
+                                <div class="p-details">
+                                    <div class="p-name" id="arena-p1-name">Giocatore 1</div>
+                                    <div class="p-score-pill">Punti: <strong id="arena-p1-score">0</strong></div>
+                                </div>
+                            </div>
+                            <div class="p-points-progress" id="arena-p1-dots"></div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- VISTA 3: PODIO DELLA VITTORIA -->
+            <div id="duel-victory-view" class="duel-subview">
+                <div class="duel-victory-card">
+                    <div class="victory-crown-animation">👑</div>
+                    <div class="victory-title-sparkle">VITTORIA SCHIACCIANTE!</div>
+                    <div class="winner-avatar-podium" id="duel-winner-avatar">🧑‍🚀</div>
+                    <h2 class="winner-name-display" id="duel-winner-name">Giocatore 1 Campione!</h2>
+                    <div class="winner-subtitle" id="duel-winner-sub">Ha raggiunto per primo il punteggio obiettivo!</div>
+
+                    <div class="duel-final-score-board">
+                        <div class="final-score-col p1-col">
+                            <div class="col-avatar" id="final-p1-avatar">🧑‍🚀</div>
+                            <div class="col-name" id="final-p1-name">Giocatore 1</div>
+                            <div class="col-score" id="final-p1-score">10</div>
+                        </div>
+                        <div class="final-score-vs">VS</div>
+                        <div class="final-score-col p2-col">
+                            <div class="col-avatar" id="final-p2-avatar">🦊</div>
+                            <div class="col-name" id="final-p2-name">Giocatore 2</div>
+                            <div class="col-score" id="final-p2-score">6</div>
+                        </div>
+                    </div>
+
+                    <div class="duel-stats-summary-grid">
+                        <div class="duel-stat-box">
+                            <div class="val" id="duel-stat-rounds">16</div>
+                            <div class="lbl">Rounds Giocati</div>
+                        </div>
+                        <div class="duel-stat-box">
+                            <div class="val" id="duel-stat-fastest">0.82s</div>
+                            <div class="lbl">Riflesso più Rapido</div>
+                        </div>
+                        <div class="duel-stat-box">
+                            <div class="val" id="duel-stat-errors">2</div>
+                            <div class="lbl">Errori Totali</div>
+                        </div>
+                    </div>
+
+                    <div class="duel-victory-actions">
+                        <button type="button" class="btn-duel-action rematch" id="btn-duel-rematch">🔄 Rivincita Immediata!</button>
+                        <button type="button" class="btn-duel-action settings" id="btn-duel-back-lobby">⚙️ Cambia Regole</button>
+                        <button type="button" class="btn-duel-action home" id="btn-duel-exit-home">🏠 Torna al Menu</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
     </main>
 
     <!-- =================== MODALE AIUTO VISIVO & TRUCCHI =================== -->
@@ -861,9 +1104,9 @@
     </div>
 
     <!-- Script Audio, Effetti e Gioco -->
-    <script src="audio.js?v=5"></script>
-    <script src="confetti.js?v=5"></script>
-    <script src="game.js?v=5"></script>
+    <script src="audio.js?v=6"></script>
+    <script src="confetti.js?v=6"></script>
+    <script src="game.js?v=6"></script>
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {

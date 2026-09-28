@@ -1,5 +1,5 @@
 // sw.js - Service Worker per Matemagica (Funzionamento 100% Offline & PWA)
-const CACHE_NAME = 'matemagica-cache-v5';
+const CACHE_NAME = 'matemagica-cache-v6';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',

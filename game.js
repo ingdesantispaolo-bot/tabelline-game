@@ -415,6 +415,7 @@ class GameManager {
         this.gymOperation = '×';
         this.gymDuration = 10;
         this.visualHelpUsed = 0;
+        this.initDuelState();
 
         this.initDOM();
         this.bindEvents();
@@ -490,6 +491,7 @@ class GameManager {
             academy: document.getElementById('screen-academy'),
             levels: document.getElementById('screen-levels'),
             gym: document.getElementById('screen-gym'),
+            duel: document.getElementById('screen-duel'),
             gameplay: document.getElementById('screen-gameplay'),
             results: document.getElementById('screen-results')
         };
@@ -910,6 +912,9 @@ class GameManager {
         this.setupAcademyFilters();
         this.setupAcademySimulators();
         this.setupTrickTrainButtons();
+
+        // Setup Duello 1 vs 1 Split-Screen
+        this.bindDuelEvents();
     }
 
     toggleFullscreen() {
@@ -2766,6 +2771,634 @@ class GameManager {
         // Esecuzione iniziale di tutti i simulatori
         this.runSimulators = [run11, runSq5, runB100, runDiff, runDh, runNine, runPct, runDiv];
         this.runAllSimulatorsDefault();
+    }
+
+    // ========================================================
+    // MOTORE DUELLO 1 VS 1 SPLIT-SCREEN (TABLET / PC)
+    // ========================================================
+
+    initDuelState() {
+        this.duel = {
+            p1: {
+                name: 'Giocatore 1 (Blu)',
+                avatar: '🧑‍🚀',
+                score: 0,
+                lockedUntil: 0,
+                lockoutInterval: null
+            },
+            p2: {
+                name: 'Giocatore 2 (Rosso)',
+                avatar: '🦊',
+                score: 0,
+                lockedUntil: 0,
+                lockoutInterval: null
+            },
+            targetScore: 10,
+            opType: 'tables', // 'tables', 'addsub', 'divisions', 'tricks', 'mixed'
+            flipped: true,
+            currentQuestion: null,
+            roundCount: 0,
+            roundStartTime: 0,
+            fastestReaction: Infinity,
+            totalErrors: 0,
+            roundActive: false
+        };
+    }
+
+    bindDuelEvents() {
+        // Tasto Home -> Duello
+        const btnModeDuel = document.getElementById('btn-mode-duel');
+        if (btnModeDuel) {
+            btnModeDuel.addEventListener('click', () => {
+                window.soundEngine.playClick();
+                this.openDuelLobby();
+            });
+        }
+
+        // Tasto Indietro dalla Lobby al Menu Principale
+        const btnBackDuel = document.getElementById('btn-back-duel');
+        if (btnBackDuel) {
+            btnBackDuel.addEventListener('click', () => {
+                window.soundEngine.playClick();
+                this.showScreen('home');
+            });
+        }
+
+        // Selezione Avatar Rapida per Giocatore 1 e Giocatore 2
+        document.querySelectorAll('.p-avatar-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                window.soundEngine.playClick();
+                const player = btn.getAttribute('data-player');
+                const avatar = btn.getAttribute('data-avatar');
+                document.querySelectorAll(`.p-avatar-btn[data-player="${player}"]`).forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                if (player === '1') {
+                    this.duel.p1.avatar = avatar;
+                    const el = document.getElementById('p1-chosen-avatar');
+                    if (el) el.textContent = avatar;
+                } else {
+                    this.duel.p2.avatar = avatar;
+                    const el = document.getElementById('p2-chosen-avatar');
+                    if (el) el.textContent = avatar;
+                }
+            });
+        });
+
+        // Selezione Categorie Operazioni
+        document.querySelectorAll('#duel-category-group .duel-pill').forEach(btn => {
+            btn.addEventListener('click', () => {
+                window.soundEngine.playClick();
+                document.querySelectorAll('#duel-category-group .duel-pill').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                this.duel.opType = btn.getAttribute('data-type') || 'tables';
+            });
+        });
+
+        // Selezione Traguardo Punti
+        document.querySelectorAll('#duel-points-group .duel-pill').forEach(btn => {
+            btn.addEventListener('click', () => {
+                window.soundEngine.playClick();
+                document.querySelectorAll('#duel-points-group .duel-pill').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                this.duel.targetScore = parseInt(btn.getAttribute('data-points'), 10) || 10;
+            });
+        });
+
+        // Switch Flip Tablet Tabletop (Faccia a Faccia)
+        const checkFlip = document.getElementById('duel-check-flip-p2');
+        if (checkFlip) {
+            checkFlip.addEventListener('change', (e) => {
+                window.soundEngine.playClick();
+                this.duel.flipped = e.target.checked;
+            });
+        }
+
+        // Tasto Avvia Duello
+        const btnStartDuel = document.getElementById('btn-start-duel');
+        if (btnStartDuel) {
+            btnStartDuel.addEventListener('click', () => {
+                this.startDuelMatch();
+            });
+        }
+
+        // Arena HUD: Ruota P2 (Live Toggle)
+        const btnArenaFlip = document.getElementById('btn-arena-flip');
+        if (btnArenaFlip) {
+            btnArenaFlip.addEventListener('click', () => {
+                this.toggleDuelP2Flip();
+            });
+        }
+
+        // Arena HUD: Esci
+        const btnArenaExit = document.getElementById('btn-arena-exit');
+        if (btnArenaExit) {
+            btnArenaExit.addEventListener('click', () => {
+                window.soundEngine.playClick();
+                this.cleanupDuelMatch();
+                this.showDuelSubview('lobby');
+            });
+        }
+
+        // Opzioni Touch / PointerDown per P1 e P2 (Multi-touch ultra reattivo)
+        for (let i = 0; i < 4; i++) {
+            const btnP1 = document.getElementById(`p1-btn-${i}`);
+            if (btnP1) {
+                btnP1.addEventListener('pointerdown', (e) => {
+                    e.preventDefault();
+                    this.handleDuelAnswer('p1', i);
+                });
+            }
+            const btnP2 = document.getElementById(`p2-btn-${i}`);
+            if (btnP2) {
+                btnP2.addEventListener('pointerdown', (e) => {
+                    e.preventDefault();
+                    this.handleDuelAnswer('p2', i);
+                });
+            }
+        }
+
+        // Supporto Tastiera Locale per 2 Giocatori su Desktop / Laptop:
+        // P1 (Sotto): Tasti 1, 2, 3, 4
+        // P2 (Sopra): Tasti 7, 8, 9, 0
+        window.addEventListener('keydown', (e) => {
+            if (!this.screens.duel || !this.screens.duel.classList.contains('active')) return;
+            const arenaView = document.getElementById('duel-arena-view');
+            if (!arenaView || !arenaView.classList.contains('active')) return;
+
+            // Player 1: 1, 2, 3, 4
+            if (['1', '2', '3', '4'].includes(e.key)) {
+                const idx = parseInt(e.key, 10) - 1;
+                this.handleDuelAnswer('p1', idx);
+            }
+            // Player 2: 7, 8, 9, 0
+            if (['7', '8', '9', '0'].includes(e.key)) {
+                const map = { '7': 0, '8': 1, '9': 2, '0': 3 };
+                this.handleDuelAnswer('p2', map[e.key]);
+            }
+            // Escape: uscita rapida
+            if (e.key === 'Escape') {
+                this.cleanupDuelMatch();
+                this.showDuelSubview('lobby');
+            }
+        });
+
+        // Azioni Podio Vittoria
+        const btnRematch = document.getElementById('btn-duel-rematch');
+        if (btnRematch) {
+            btnRematch.addEventListener('click', () => {
+                window.soundEngine.playClick();
+                this.startDuelMatch();
+            });
+        }
+
+        const btnBackLobby = document.getElementById('btn-duel-back-lobby');
+        if (btnBackLobby) {
+            btnBackLobby.addEventListener('click', () => {
+                window.soundEngine.playClick();
+                this.showDuelSubview('lobby');
+            });
+        }
+
+        const btnExitHome = document.getElementById('btn-duel-exit-home');
+        if (btnExitHome) {
+            btnExitHome.addEventListener('click', () => {
+                window.soundEngine.playClick();
+                this.showScreen('home');
+            });
+        }
+    }
+
+    openDuelLobby() {
+        // Pre-popola avatar P1 con quello del profilo attivo se impostato
+        if (this.saveData.avatarId) {
+            const av = this.getAvatar(this.saveData.avatarId);
+            if (av) {
+                this.duel.p1.avatar = av.icon;
+                const el = document.getElementById('p1-chosen-avatar');
+                if (el) el.textContent = av.icon;
+            }
+        }
+        if (this.saveData.playerName) {
+            const p1Input = document.getElementById('p1-name-input');
+            if (p1Input) p1Input.value = this.saveData.playerName;
+        }
+
+        this.showScreen('duel');
+        this.showDuelSubview('lobby');
+    }
+
+    showDuelSubview(name) {
+        document.querySelectorAll('.duel-subview').forEach(v => v.classList.remove('active'));
+        const target = document.getElementById(`duel-${name}-view`);
+        if (target) target.classList.add('active');
+    }
+
+    startDuelMatch() {
+        const p1Input = document.getElementById('p1-name-input');
+        const p2Input = document.getElementById('p2-name-input');
+        this.duel.p1.name = (p1Input && p1Input.value.trim()) || 'Giocatore 1 (Blu)';
+        this.duel.p2.name = (p2Input && p2Input.value.trim()) || 'Giocatore 2 (Rosso)';
+
+        const checkFlip = document.getElementById('duel-check-flip-p2');
+        if (checkFlip) this.duel.flipped = checkFlip.checked;
+
+        // Reset punteggi e statistiche
+        this.duel.p1.score = 0;
+        this.duel.p2.score = 0;
+        this.duel.p1.lockedUntil = 0;
+        this.duel.p2.lockedUntil = 0;
+        this.duel.roundCount = 0;
+        this.duel.fastestReaction = Infinity;
+        this.duel.totalErrors = 0;
+
+        this.cleanupDuelMatch();
+
+        // Applicazione orientamento P2 (180° per tablet orizzontale tavolo)
+        const p2Zone = document.getElementById('duel-p2-zone');
+        if (p2Zone) {
+            if (this.duel.flipped) {
+                p2Zone.classList.add('flipped-180');
+            } else {
+                p2Zone.classList.remove('flipped-180');
+            }
+        }
+
+        // Setup Header Arena
+        const elP1Name = document.getElementById('arena-p1-name');
+        const elP1Avatar = document.getElementById('arena-p1-avatar');
+        const elP2Name = document.getElementById('arena-p2-name');
+        const elP2Avatar = document.getElementById('arena-p2-avatar');
+        const elHudTarget = document.getElementById('hud-target-text');
+
+        if (elP1Name) elP1Name.textContent = this.duel.p1.name;
+        if (elP1Avatar) elP1Avatar.textContent = this.duel.p1.avatar;
+        if (elP2Name) elP2Name.textContent = this.duel.p2.name;
+        if (elP2Avatar) elP2Avatar.textContent = this.duel.p2.avatar;
+        if (elHudTarget) elHudTarget.textContent = `Traguardo: ${this.duel.targetScore} pt`;
+
+        this.renderDuelScoreboard();
+        this.showDuelSubview('arena');
+
+        if (window.soundEngine && window.soundEngine.playDuelStart) {
+            window.soundEngine.playDuelStart();
+        }
+
+        this.nextDuelRound();
+    }
+
+    toggleDuelP2Flip() {
+        this.duel.flipped = !this.duel.flipped;
+        const p2Zone = document.getElementById('duel-p2-zone');
+        if (p2Zone) {
+            p2Zone.classList.toggle('flipped-180', this.duel.flipped);
+        }
+        const checkFlip = document.getElementById('duel-check-flip-p2');
+        if (checkFlip) checkFlip.checked = this.duel.flipped;
+        this.showToastNotification(this.duel.flipped ? 'Vista P2 Capovolta a 180° 🔄' : 'Vista P2 Dritta ⬆️');
+    }
+
+    cleanupDuelMatch() {
+        if (this.duel.p1.lockoutInterval) {
+            clearInterval(this.duel.p1.lockoutInterval);
+            this.duel.p1.lockoutInterval = null;
+        }
+        if (this.duel.p2.lockoutInterval) {
+            clearInterval(this.duel.p2.lockoutInterval);
+            this.duel.p2.lockoutInterval = null;
+        }
+        const o1 = document.getElementById('p1-lockout-overlay');
+        const o2 = document.getElementById('p2-lockout-overlay');
+        if (o1) o1.classList.remove('active');
+        if (o2) o2.classList.remove('active');
+    }
+
+    generateDuelQuestion() {
+        let text = '';
+        let answer = 0;
+        let distractors = new Set();
+        const type = this.duel.opType === 'mixed'
+            ? ['tables', 'addsub', 'divisions', 'tricks'][Math.floor(Math.random() * 4)]
+            : this.duel.opType;
+
+        if (type === 'tables') {
+            const a = Math.floor(Math.random() * 11) + 2; // 2 to 12
+            const b = Math.floor(Math.random() * 9) + 2;  // 2 to 10
+            text = `${a} × ${b} = ?`;
+            answer = a * b;
+            distractors.add(a * (b + 1));
+            distractors.add(a * (b - 1));
+            distractors.add((a + 1) * b);
+            distractors.add((a - 1) * b);
+            distractors.add(answer + (Math.random() > 0.5 ? 2 : -2));
+            distractors.add(answer + (Math.random() > 0.5 ? 10 : -10));
+        } else if (type === 'addsub') {
+            const isAdd = Math.random() > 0.5;
+            if (isAdd) {
+                const a = Math.floor(Math.random() * 60) + 12;
+                const b = Math.floor(Math.random() * 45) + 8;
+                text = `${a} + ${b} = ?`;
+                answer = a + b;
+                distractors.add(answer + 10);
+                distractors.add(answer - 10);
+                distractors.add(answer + 2);
+                distractors.add(answer - 2);
+                distractors.add(answer + 1);
+            } else {
+                const a = Math.floor(Math.random() * 70) + 25;
+                const b = Math.floor(Math.random() * (a - 8)) + 6;
+                text = `${a} - ${b} = ?`;
+                answer = a - b;
+                distractors.add(answer + 10);
+                distractors.add(answer - 10);
+                distractors.add(answer + 2);
+                distractors.add(answer - 2);
+            }
+        } else if (type === 'divisions') {
+            const b = Math.floor(Math.random() * 8) + 2; // 2 to 9
+            const ans = Math.floor(Math.random() * 10) + 2; // 2 to 11
+            const a = b * ans;
+            text = `${a} ÷ ${b} = ?`;
+            answer = ans;
+            distractors.add(ans + 1);
+            distractors.add(ans - 1);
+            distractors.add(ans + 2);
+            distractors.add(ans - 2);
+            distractors.add(ans + 3);
+        } else {
+            // Tricks Mentali Veloci
+            const subType = Math.floor(Math.random() * 4);
+            if (subType === 0) {
+                // × 11
+                const x = Math.floor(Math.random() * 40) + 12;
+                text = `${x} × 11 = ?`;
+                answer = x * 11;
+                distractors.add(answer + 10);
+                distractors.add(answer - 10);
+                distractors.add(answer + 11);
+                distractors.add(answer - 11);
+            } else if (subType === 1) {
+                // Quadrati del 5
+                const bases = [15, 25, 35, 45, 55, 65, 75];
+                const x = bases[Math.floor(Math.random() * bases.length)];
+                text = `${x}² = ?`;
+                answer = x * x;
+                distractors.add(answer + 100);
+                distractors.add(answer - 100);
+                distractors.add(answer + 50);
+                distractors.add(answer - 50);
+            } else if (subType === 2) {
+                // × 5
+                const x = (Math.floor(Math.random() * 25) + 6) * 2;
+                text = `${x} × 5 = ?`;
+                answer = x * 5;
+                distractors.add(answer + 10);
+                distractors.add(answer - 10);
+                distractors.add(answer + 20);
+                distractors.add(answer - 20);
+            } else {
+                // × 9
+                const x = Math.floor(Math.random() * 30) + 12;
+                text = `${x} × 9 = ?`;
+                answer = x * 9;
+                distractors.add(answer + 9);
+                distractors.add(answer - 9);
+                distractors.add(answer + 10);
+                distractors.add(answer - 10);
+            }
+        }
+
+        // Filtra distrattori validi (> 0 e != answer)
+        const validDistractors = Array.from(distractors).filter(d => d > 0 && d !== answer);
+        // Shuffle distrattori
+        for (let i = validDistractors.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [validDistractors[i], validDistractors[j]] = [validDistractors[j], validDistractors[i]];
+        }
+
+        // Seleziona 3 distrattori plausibili
+        const finalDistractors = validDistractors.slice(0, 3);
+        while (finalDistractors.length < 3) {
+            const offset = (finalDistractors.length + 1) * 3;
+            const fallback = answer > offset ? answer - offset : answer + offset;
+            if (!finalDistractors.includes(fallback) && fallback !== answer && fallback > 0) {
+                finalDistractors.push(fallback);
+            } else {
+                finalDistractors.push(answer + finalDistractors.length + 1);
+            }
+        }
+
+        const options = [answer, ...finalDistractors];
+        // Shuffle 4 opzioni
+        for (let i = options.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [options[i], options[j]] = [options[j], options[i]];
+        }
+
+        return {
+            text,
+            answer,
+            options
+        };
+    }
+
+    nextDuelRound() {
+        this.duel.roundCount++;
+        this.cleanupDuelMatch();
+
+        // Resetta stati visivi pulsanti
+        for (let i = 0; i < 4; i++) {
+            const b1 = document.getElementById(`p1-btn-${i}`);
+            const b2 = document.getElementById(`p2-btn-${i}`);
+            if (b1) b1.className = 'duel-opt-btn p1-btn';
+            if (b2) b2.className = 'duel-opt-btn p2-btn';
+        }
+
+        const q = this.generateDuelQuestion();
+        this.duel.currentQuestion = q;
+
+        const q1El = document.getElementById('arena-p1-question');
+        const q2El = document.getElementById('arena-p2-question');
+        if (q1El) q1El.textContent = q.text;
+        if (q2El) q2El.textContent = q.text;
+
+        for (let i = 0; i < 4; i++) {
+            const val = q.options[i];
+            const b1 = document.getElementById(`p1-btn-${i}`);
+            const b2 = document.getElementById(`p2-btn-${i}`);
+            if (b1) b1.textContent = val;
+            if (b2) b2.textContent = val;
+        }
+
+        this.duel.roundActive = true;
+        this.duel.roundStartTime = Date.now();
+    }
+
+    handleDuelAnswer(playerKey, optionIndex) {
+        if (!this.duel.roundActive) return;
+        const now = Date.now();
+        if (this.duel[playerKey].lockedUntil > now) return;
+
+        const chosenVal = this.duel.currentQuestion.options[optionIndex];
+        const correctVal = this.duel.currentQuestion.answer;
+
+        if (chosenVal === correctVal) {
+            // Risposta esatta!
+            this.duel.roundActive = false;
+            const reaction = (now - this.duel.roundStartTime) / 1000;
+            if (reaction < this.duel.fastestReaction) {
+                this.duel.fastestReaction = reaction;
+            }
+
+            this.duel[playerKey].score++;
+
+            // Suono dedicato al punto
+            if (playerKey === 'p1') {
+                if (window.soundEngine && window.soundEngine.playPointP1) window.soundEngine.playPointP1();
+            } else {
+                if (window.soundEngine && window.soundEngine.playPointP2) window.soundEngine.playPointP2();
+            }
+
+            // Flash visivo verde sul tasto vincente
+            const winBtn = document.getElementById(`${playerKey}-btn-${optionIndex}`);
+            if (winBtn) winBtn.classList.add('correct-flash');
+
+            this.renderDuelScoreboard();
+
+            // Verifica vittoria
+            if (this.duel[playerKey].score >= this.duel.targetScore) {
+                setTimeout(() => this.endDuelMatch(playerKey), 650);
+            } else {
+                setTimeout(() => this.nextDuelRound(), 600);
+            }
+        } else {
+            // Risposta errata: Lockout di 1.5s
+            this.duel.totalErrors++;
+            if (window.soundEngine && window.soundEngine.playLockout) {
+                window.soundEngine.playLockout();
+            }
+
+            const wrongBtn = document.getElementById(`${playerKey}-btn-${optionIndex}`);
+            if (wrongBtn) wrongBtn.classList.add('wrong-flash');
+
+            this.triggerDuelLockout(playerKey);
+
+            // Se anche l'avversario è bloccato, mostra la risposta e vai al round successivo
+            const opponentKey = playerKey === 'p1' ? 'p2' : 'p1';
+            if (this.duel[opponentKey].lockedUntil > now) {
+                this.duel.roundActive = false;
+                const corrIdx = this.duel.currentQuestion.options.indexOf(correctVal);
+                const b1 = document.getElementById(`p1-btn-${corrIdx}`);
+                const b2 = document.getElementById(`p2-btn-${corrIdx}`);
+                if (b1) b1.classList.add('correct-flash');
+                if (b2) b2.classList.add('correct-flash');
+
+                setTimeout(() => this.nextDuelRound(), 1200);
+            }
+        }
+    }
+
+    triggerDuelLockout(playerKey) {
+        const duration = 1500;
+        const endTime = Date.now() + duration;
+        this.duel[playerKey].lockedUntil = endTime;
+
+        const overlay = document.getElementById(`${playerKey}-lockout-overlay`);
+        const timerEl = document.getElementById(`${playerKey}-lockout-timer`);
+        if (overlay) overlay.classList.add('active');
+
+        if (this.duel[playerKey].lockoutInterval) {
+            clearInterval(this.duel[playerKey].lockoutInterval);
+        }
+
+        this.duel[playerKey].lockoutInterval = setInterval(() => {
+            const left = Math.max(0, endTime - Date.now());
+            if (timerEl) timerEl.textContent = `${(left / 1000).toFixed(1)}s`;
+            if (left <= 0) {
+                clearInterval(this.duel[playerKey].lockoutInterval);
+                this.duel[playerKey].lockoutInterval = null;
+                if (overlay) overlay.classList.remove('active');
+            }
+        }, 100);
+    }
+
+    renderDuelScoreboard() {
+        const s1 = document.getElementById('arena-p1-score');
+        const s2 = document.getElementById('arena-p2-score');
+        const hud1 = document.getElementById('hud-score-p1');
+        const hud2 = document.getElementById('hud-score-p2');
+
+        if (s1) s1.textContent = this.duel.p1.score;
+        if (s2) s2.textContent = this.duel.p2.score;
+        if (hud1) hud1.textContent = this.duel.p1.score;
+        if (hud2) hud2.textContent = this.duel.p2.score;
+
+        // Render pallini progresso
+        const dots1 = document.getElementById('arena-p1-dots');
+        const dots2 = document.getElementById('arena-p2-dots');
+        if (dots1) {
+            dots1.innerHTML = '';
+            for (let i = 0; i < this.duel.targetScore; i++) {
+                const dot = document.createElement('div');
+                dot.className = `p-point-dot ${i < this.duel.p1.score ? 'filled' : ''}`;
+                dots1.appendChild(dot);
+            }
+        }
+        if (dots2) {
+            dots2.innerHTML = '';
+            for (let i = 0; i < this.duel.targetScore; i++) {
+                const dot = document.createElement('div');
+                dot.className = `p-point-dot ${i < this.duel.p2.score ? 'filled' : ''}`;
+                dots2.appendChild(dot);
+            }
+        }
+    }
+
+    endDuelMatch(winnerKey) {
+        this.cleanupDuelMatch();
+        this.duel.roundActive = false;
+
+        const winner = this.duel[winnerKey];
+        if (window.soundEngine && window.soundEngine.playDuelVictory) {
+            window.soundEngine.playDuelVictory();
+        }
+        if (window.confetti && window.confetti.burst) {
+            window.confetti.burst(window.innerWidth / 2, window.innerHeight * 0.35, 75);
+        }
+
+        const elWinAvatar = document.getElementById('duel-winner-avatar');
+        const elWinName = document.getElementById('duel-winner-name');
+        const elFinalP1Name = document.getElementById('final-p1-name');
+        const elFinalP1Avatar = document.getElementById('final-p1-avatar');
+        const elFinalP1Score = document.getElementById('final-p1-score');
+        const elFinalP2Name = document.getElementById('final-p2-name');
+        const elFinalP2Avatar = document.getElementById('final-p2-avatar');
+        const elFinalP2Score = document.getElementById('final-p2-score');
+
+        const elStatRounds = document.getElementById('duel-stat-rounds');
+        const elStatFastest = document.getElementById('duel-stat-fastest');
+        const elStatErrors = document.getElementById('duel-stat-errors');
+
+        if (elWinAvatar) elWinAvatar.textContent = winner.avatar;
+        if (elWinName) elWinName.textContent = `👑 ${winner.name} è il Campione!`;
+
+        if (elFinalP1Name) elFinalP1Name.textContent = this.duel.p1.name;
+        if (elFinalP1Avatar) elFinalP1Avatar.textContent = this.duel.p1.avatar;
+        if (elFinalP1Score) elFinalP1Score.textContent = this.duel.p1.score;
+
+        if (elFinalP2Name) elFinalP2Name.textContent = this.duel.p2.name;
+        if (elFinalP2Avatar) elFinalP2Avatar.textContent = this.duel.p2.avatar;
+        if (elFinalP2Score) elFinalP2Score.textContent = this.duel.p2.score;
+
+        if (elStatRounds) elStatRounds.textContent = this.duel.roundCount;
+        if (elStatFastest) {
+            elStatFastest.textContent = this.duel.fastestReaction < 99 ? `${this.duel.fastestReaction.toFixed(2)}s` : '-';
+        }
+        if (elStatErrors) elStatErrors.textContent = this.duel.totalErrors;
+
+        // Premiazione XP al profilo principale
+        this.addXP(80, 'Vittoria Duello');
+
+        this.showDuelSubview('victory');
     }
 
     runAllSimulatorsDefault() {

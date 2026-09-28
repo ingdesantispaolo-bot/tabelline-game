@@ -321,6 +321,126 @@ class SoundEngine {
         osc.start(now);
         osc.stop(now + 0.24);
     }
+
+    // ===== EFFETTI AUDIO SPECIFICI PER MODALITÀ DUELLO 1 VS 1 =====
+    playDuelStart() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+
+        const now = this.ctx.currentTime;
+        // Suono gong / trombe di sfida
+        const notes = [293.66, 440.00, 587.33, 880.00]; // D4, A4, D5, A5
+        notes.forEach((freq, idx) => {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'triangle';
+            const start = now + idx * 0.09;
+            osc.frequency.setValueAtTime(freq, start);
+            gain.gain.setValueAtTime(0, start);
+            gain.gain.linearRampToValueAtTime(0.3, start + 0.02);
+            gain.gain.exponentialRampToValueAtTime(0.001, start + (idx === notes.length - 1 ? 0.8 : 0.22));
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(start);
+            osc.stop(start + (idx === notes.length - 1 ? 0.85 : 0.25));
+        });
+    }
+
+    playPointP1() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+
+        const now = this.ctx.currentTime;
+        // Chime cristallino ciano/blu per Giocatore 1
+        const notes = [523.25, 783.99, 1046.50]; // C5, G5, C6
+        notes.forEach((freq, idx) => {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sine';
+            const start = now + idx * 0.06;
+            osc.frequency.setValueAtTime(freq, start);
+            gain.gain.setValueAtTime(0.22, start);
+            gain.gain.exponentialRampToValueAtTime(0.001, start + 0.25);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(start);
+            osc.stop(start + 0.26);
+        });
+    }
+
+    playPointP2() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+
+        const now = this.ctx.currentTime;
+        // Chime caldo energico corallo/rosso per Giocatore 2
+        const notes = [440.00, 659.25, 880.00]; // A4, E5, A5
+        notes.forEach((freq, idx) => {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'triangle';
+            const start = now + idx * 0.06;
+            osc.frequency.setValueAtTime(freq, start);
+            gain.gain.setValueAtTime(0.25, start);
+            gain.gain.exponentialRampToValueAtTime(0.001, start + 0.25);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(start);
+            osc.stop(start + 0.26);
+        });
+    }
+
+    playLockout() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(180, now);
+        osc.frequency.linearRampToValueAtTime(90, now + 0.2);
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.22);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.23);
+    }
+
+    playDuelVictory() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+
+        const now = this.ctx.currentTime;
+        // Gran fanfara trionfale della corona
+        const chords = [
+            { t: 0, f: [392, 523, 659] },      // C major
+            { t: 0.18, f: [440, 587, 698] },  // D minor
+            { t: 0.36, f: [523, 659, 783] },  // C major
+            { t: 0.58, f: [659, 783, 1046] }  // High C major hold
+        ];
+        chords.forEach(c => {
+            c.f.forEach(freq => {
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'triangle';
+                const start = now + c.t;
+                osc.frequency.setValueAtTime(freq, start);
+                gain.gain.setValueAtTime(0.12, start);
+                gain.gain.exponentialRampToValueAtTime(0.001, start + (c.t > 0.5 ? 1.0 : 0.22));
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(start);
+                osc.stop(start + (c.t > 0.5 ? 1.1 : 0.25));
+            });
+        });
+    }
 }
 
 window.soundEngine = new SoundEngine();
