@@ -18,7 +18,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700;800;900&family=Nunito:wght@600;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=6">
+    <link rel="stylesheet" href="styles.css?v=7">
 </head>
 <body class="dark-theme">
 
@@ -55,6 +55,7 @@
             </div>
 
             <button class="btn-icon" id="btn-open-records" title="Record & Statistiche Personali">📊</button>
+            <button class="btn-icon" id="btn-open-backup" title="Backup & Sincronizzazione Dati Cloud">💾</button>
             <button class="btn-icon" id="btn-toggle-theme" title="Tema Chiaro / Scuro">☀️</button>
             <button class="btn-icon" id="btn-open-share" title="Pubblica / Condividi Online">🌐</button>
             <button class="btn-icon" id="btn-toggle-fullscreen" title="Schermo Intero (Tablet / PC)">⛶</button>
@@ -969,13 +970,14 @@
             <!-- Sincronizzazione Dati / Backup (Esporta / Importa) -->
             <div class="profile-sync-box">
                 <div class="profile-sync-header">
-                    <span>💾 Trasferimento & Backup Partita</span>
+                    <span>💾 Trasferimento, Backup & Cloud Sync</span>
                 </div>
-                <p class="profile-sync-desc">Sposta le tue stelle e i livelli sbloccati su un altro dispositivo (es. da PC a Tablet) con un clic:</p>
+                <p class="profile-sync-desc">Sposta le tue stelle, record e livelli sbloccati tra PC, iPad e Tablet con il codice QR o scarica il file di backup:</p>
                 <div class="profile-sync-buttons">
-                    <button class="btn-sync-action export" id="btn-export-save" title="Copia codice di salvataggio">📤 Esporta Partita</button>
-                    <button class="btn-sync-action import" id="btn-import-save" title="Incolla codice di salvataggio">📥 Importa Partita</button>
+                    <button type="button" class="btn-sync-action export" id="btn-export-save" title="Apri centro esportazione">📤 Esporta File / Codice</button>
+                    <button type="button" class="btn-sync-action import" id="btn-import-save" title="Apri centro importazione">📥 Importa Partita</button>
                 </div>
+                <button type="button" class="btn-open-full-backup" id="btn-profile-open-backup">☁️ Apri Centro Backup & QR Code Sync ➔</button>
             </div>
 
             <h4 class="avatar-catalog-title">Scegli il tuo Avatar (<span id="unlocked-avatars-count">3</span>/12 Sbloccati)</h4>
@@ -1103,10 +1105,164 @@
         </div>
     </div>
 
+    <!-- =================== MODALE BACKUP & SINCRONIZZAZIONE DATI =================== -->
+    <div class="modal-overlay" id="modal-backup">
+        <div class="modal-content modal-backup-content">
+            <div class="backup-modal-badge">☁️ SALVATAGGIO & CLOUD SYNC</div>
+            <h3 class="modal-title">Backup & Sincronizzazione Dati</h3>
+            <p class="modal-subtitle">Salva i tuoi progressi, sincronizza tra PC e Tablet in un attimo o ripristina la tua partita su qualsiasi dispositivo!</p>
+
+            <!-- Schede di Navigazione Modale -->
+            <div class="backup-tabs-row" id="backup-tabs-row">
+                <button type="button" class="backup-tab-btn active" data-tab="cloud">☁️ Sincronizza (QR / Link)</button>
+                <button type="button" class="backup-tab-btn" data-tab="export">📥 Esporta (File / Codice)</button>
+                <button type="button" class="backup-tab-btn" data-tab="import">📤 Importa & Ripristina</button>
+            </div>
+
+            <!-- SCHEDA 1: SINCRONIZZAZIONE CLOUD & QR CODE -->
+            <div class="backup-tab-content active" id="tab-backup-cloud">
+                <div class="sync-highlight-card">
+                    <div class="sync-step-icon">📱 ➔ 💻</div>
+                    <h4>Sincronizzazione Immediata Multi-Dispositivo</h4>
+                    <p>Inquadra questo QR code con la fotocamera del tuo <strong>iPad, iPhone o Tablet</strong> per trasferire istantaneamente tutte le tue stelle, livelli sbloccati e trofei!</p>
+                    
+                    <div class="sync-qr-display-box">
+                        <img id="sync-qr-img" src="" alt="QR Code Sincronizzazione" class="sync-qr-img" loading="lazy">
+                        <div class="sync-qr-loading" id="sync-qr-loading">Generazione QR Code in corso... ⏳</div>
+                    </div>
+
+                    <div class="sync-url-copy-box">
+                        <label class="sync-url-label">Oppure apri o copia questo link di sincronizzazione:</label>
+                        <div class="sync-url-input-group">
+                            <input type="text" id="sync-share-url-input" class="sync-url-input" readonly>
+                            <button type="button" class="btn-sync-copy" id="btn-copy-sync-url">📋 Copia Link</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cloud-save-info-card">
+                    <div class="cloud-info-icon">⚡</div>
+                    <div class="cloud-info-text">
+                        <strong>Nessuna Registrazione Richiesta:</strong> Il link e il codice QR contengono i tuoi dati crittografati in modo sicuro e funzionano sia online che offline!
+                    </div>
+                </div>
+            </div>
+
+            <!-- SCHEDA 2: ESPORTA (FILE JSON / CODICE) -->
+            <div class="backup-tab-content" id="tab-backup-export">
+                <div class="export-methods-grid">
+                    <!-- Metodo A: Download File .json -->
+                    <div class="export-method-card">
+                        <div class="method-icon">📁</div>
+                        <h4>File di Salvataggio (.json)</h4>
+                        <p>Scarica una copia di backup completa da conservare sul tuo computer o inviare via email.</p>
+                        <button type="button" class="btn-backup-download" id="btn-download-backup-file">
+                            📥 Scarica File di Backup (.json)
+                        </button>
+                    </div>
+
+                    <!-- Metodo B: Codice Testuale / Appunti -->
+                    <div class="export-method-card">
+                        <div class="method-icon">📋</div>
+                        <h4>Codice di Salvataggio Testuale</h4>
+                        <p>Copia il codice del tuo profilo negli appunti per incollarlo dove vuoi.</p>
+                        <textarea id="export-code-textarea" class="backup-code-textarea" readonly rows="3" placeholder="Generazione codice..."></textarea>
+                        <button type="button" class="btn-backup-copy" id="btn-copy-backup-code">
+                            📋 Copia Codice Negli Appunti
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SCHEDA 3: IMPORTA & RIPRISTINA -->
+            <div class="backup-tab-content" id="tab-backup-import">
+                <!-- Box Drag & Drop File -->
+                <div class="import-dropzone" id="import-dropzone">
+                    <input type="file" id="import-file-input" accept=".json" style="display: none;">
+                    <div class="dropzone-icon">📥</div>
+                    <h4>Trascina qui il file di backup (.json)</h4>
+                    <p>oppure clicca per selezionarlo dal tuo dispositivo</p>
+                    <button type="button" class="btn-select-file" id="btn-select-import-file">📁 Scegli File dal Dispositivo</button>
+                </div>
+
+                <div class="import-separator"><span>OPPURE INCOLLA IL CODICE</span></div>
+
+                <div class="import-paste-box">
+                    <textarea id="import-code-input" class="backup-code-textarea" rows="3" placeholder="Incolla qui il codice di salvataggio o il JSON completo..."></textarea>
+                    <button type="button" class="btn-verify-import" id="btn-verify-import-data">🔍 Analizza e Verifica Dati</button>
+                </div>
+
+                <!-- Anteprima Dati Trovati (Mostrata prima di confermare) -->
+                <div class="backup-preview-card" id="backup-preview-card" style="display: none;">
+                    <div class="preview-card-header">
+                        <span class="preview-badge">✅ SALVATAGGIO VALIDO TROVATO</span>
+                    </div>
+                    <div class="preview-details-grid">
+                        <div class="preview-item">
+                            <span class="lbl">Giocatore:</span>
+                            <strong class="val" id="prev-player-name">Ingegnere Paolo</strong>
+                        </div>
+                        <div class="preview-item">
+                            <span class="lbl">Livello:</span>
+                            <strong class="val" id="prev-player-lvl">Livello 4</strong>
+                        </div>
+                        <div class="preview-item">
+                            <span class="lbl">Stelle Totali:</span>
+                            <strong class="val" id="prev-stars-count">48 ⭐</strong>
+                        </div>
+                        <div class="preview-item">
+                            <span class="lbl">Trofei Sbloccati:</span>
+                            <strong class="val" id="prev-trophies-count">9 🏆</strong>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-confirm-restore" id="btn-confirm-restore-save">
+                        🔄 Conferma e Ripristina Progressi sul Dispositivo!
+                    </button>
+                </div>
+
+                <!-- Snapshot Emergenza -->
+                <div class="emergency-restore-box" id="emergency-restore-box" style="display: none;">
+                    <span>🛡️ È disponibile uno snapshot di emergenza prima dell'ultimo reset:</span>
+                    <button type="button" class="btn-emergency-restore" id="btn-emergency-restore-save">Ripristina Snapshot</button>
+                </div>
+            </div>
+
+            <div class="modal-footer-actions">
+                <button type="button" class="btn-close-modal" id="btn-close-backup">Chiudi</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- =================== MODALE CONFERMA SINCRONIZZAZIONE RILEVATA (AUTO-DETECT URL) =================== -->
+    <div class="modal-overlay" id="modal-sync-confirm">
+        <div class="modal-content modal-sync-confirm-content">
+            <div class="sync-confirm-icon">📲 ✨</div>
+            <h3 class="modal-title">Sincronizzazione Salvataggio Rilevata!</h3>
+            <p>È stato rilevato un salvataggio valido tramite link di sincronizzazione:</p>
+            
+            <div class="sync-compare-grid">
+                <div class="compare-col incoming">
+                    <div class="col-tag">NUOVO SALVATAGGIO IN ARRIVO</div>
+                    <div class="col-avatar" id="sync-incoming-avatar">🧑‍🚀</div>
+                    <div class="col-name" id="sync-incoming-name">Ingegnere Paolo</div>
+                    <div class="col-stat">Stelle: <strong id="sync-incoming-stars">48</strong> ⭐</div>
+                    <div class="col-stat">Livello: <strong id="sync-incoming-lvl">4</strong></div>
+                </div>
+            </div>
+
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin: 16px 0;">Vuoi applicare questo salvataggio su questo dispositivo?</p>
+
+            <div class="sync-confirm-buttons">
+                <button type="button" class="btn-sync-accept" id="btn-sync-accept">✅ Sì, Sincronizza Questo Dispositivo!</button>
+                <button type="button" class="btn-sync-cancel" id="btn-sync-cancel">✕ Annulla (Mantieni dati attuali)</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Script Audio, Effetti e Gioco -->
-    <script src="audio.js?v=6"></script>
-    <script src="confetti.js?v=6"></script>
-    <script src="game.js?v=6"></script>
+    <script src="audio.js?v=7"></script>
+    <script src="confetti.js?v=7"></script>
+    <script src="game.js?v=7"></script>
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {

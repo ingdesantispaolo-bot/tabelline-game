@@ -422,6 +422,7 @@ class GameManager {
         this.checkAvatarUnlocks();
         this.updateHeaderStats();
         this.renderLevelsMap();
+        this.checkUrlForSyncPayload();
     }
 
     loadSaveData() {
@@ -502,6 +503,9 @@ class GameManager {
         this.modalRecords = document.getElementById('modal-records');
         this.modalDiploma = document.getElementById('modal-diploma');
         this.modalLevelUp = document.getElementById('modal-levelup');
+        this.modalBackup = document.getElementById('modal-backup');
+        this.modalSyncConfirm = document.getElementById('modal-sync-confirm');
+        this.btnOpenBackup = document.getElementById('btn-open-backup');
         this.btnToggleTheme = document.getElementById('btn-toggle-theme');
         this.initTheme();
     }
@@ -767,53 +771,23 @@ class GameManager {
             });
         }
 
-        // Esporta e Importa Salvataggio (Sync Multipiattaforma)
+        // Esporta e Importa Salvataggio (Apertura Centro Backup & Cloud Sync)
         const btnExportSave = document.getElementById('btn-export-save');
         if (btnExportSave) {
             btnExportSave.addEventListener('click', () => {
-                window.soundEngine.playClick();
-                const jsonStr = JSON.stringify(this.saveData);
-                if (navigator.clipboard && navigator.clipboard.writeText) {
-                    navigator.clipboard.writeText(jsonStr).then(() => {
-                        this.showToastNotification('💾 Partita salvata negli appunti! Incollala sul tuo tablet.');
-                    }).catch(() => {
-                        prompt('Ecco il tuo codice di salvataggio (Ctrl+C per copiare):', jsonStr);
-                    });
-                } else {
-                    prompt('Ecco il tuo codice di salvataggio (Ctrl+C per copiare):', jsonStr);
-                }
+                this.openBackupModal('export');
             });
         }
 
         const btnImportSave = document.getElementById('btn-import-save');
         if (btnImportSave) {
             btnImportSave.addEventListener('click', () => {
-                window.soundEngine.playClick();
-                const raw = prompt('Incolla qui il codice di salvataggio (JSON) da ripristinare:');
-                if (raw) {
-                    try {
-                        const parsed = JSON.parse(raw.trim());
-                        if (parsed && (parsed.stars !== undefined || parsed.unlockedLevel !== undefined)) {
-                            this.saveData = Object.assign(this.loadSaveData(), parsed);
-                            this.saveGame();
-                            this.updateHeaderStats();
-                            this.renderLevelsMap();
-                            this.renderTrophiesModal();
-                            this.renderAvatarCatalog();
-                            if (window.soundEngine && window.soundEngine.playVictory) window.soundEngine.playVictory();
-                            this.showToastNotification('🎉 Partita ripristinata con successo!');
-                        } else {
-                            this.showToastNotification('Formato dati non valido ❌');
-                        }
-                    } catch (e) {
-                        this.showToastNotification('Errore di lettura: JSON non valido ❌');
-                    }
-                }
+                this.openBackupModal('import');
             });
         }
 
         // Chiusura modali cliccando all'esterno sull'overlay
-        [this.modalShare, this.modalTrophies, this.modalVisualHelp, this.modalProfile, this.modalRecords, this.modalDiploma, this.modalLevelUp].forEach(modal => {
+        [this.modalShare, this.modalTrophies, this.modalVisualHelp, this.modalProfile, this.modalRecords, this.modalDiploma, this.modalLevelUp, this.modalBackup, this.modalSyncConfirm].forEach(modal => {
             if (modal) {
                 modal.addEventListener('click', (e) => {
                     if (e.target === modal) {
@@ -823,6 +797,9 @@ class GameManager {
                 });
             }
         });
+
+        // Eventi dedicati al Centro Backup & Cloud Sync
+        this.bindBackupEvents();
 
         // Tastierino a Schermo (Tablet Touch)
         document.querySelectorAll('.num-btn').forEach(btn => {
@@ -3405,6 +3382,462 @@ class GameManager {
         if (this.runSimulators) {
             this.runSimulators.forEach(fn => fn());
         }
+    }
+
+    // ========================================================
+    // CENTRO BACKUP & SINCRONIZZAZIONE DATI (CLOUD & CROSS-DEVICE)
+    // ========================================================
+
+    bindBackupEvents() {
+        // Tasto Header Backup
+        if (this.btnOpenBackup) {
+            this.btnOpenBackup.addEventListener('click', () => {
+                window.soundEngine.playClick();
+                this.openBackupModal('cloud');
+            });
+        }
+
+        // Tasto Profilo Backup
+        const btnProfBackup = document.getElementById('btn-profile-open-backup');
+        if (btnProfBackup) {
+            btnProfBackup.addEventListener('click', () => {
+                window.soundEngine.playClick();
+                if (this.modalProfile) this.modalProfile.classList.remove('active');
+                this.openBackupModal('cloud');
+            });
+        }
+
+        // Tasto Chiudi Modale Backup
+        const btnCloseBackup = document.getElementById('btn-close-backup');
+        if (btnCloseBackup) {
+            btnCloseBackup.addEventListener('click', () => {
+                window.soundEngine.playClick();
+                if (this.modalBackup) this.modalBackup.classList.remove('active');
+            });
+        }
+
+        // Schede Modale Backup
+        document.querySelectorAll('.backup-tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                window.soundEngine.playClick();
+                const tab = btn.getAttribute('data-tab');
+                this.switchBackupTab(tab);
+            });
+        });
+
+        // Copia Link Sincronizzazione
+        const btnCopySyncUrl = document.getElementById('btn-copy-sync-url');
+        if (btnCopySyncUrl) {
+            btnCopySyncUrl.addEventListener('click', () => {
+                this.copySyncUrl();
+            });
+        }
+
+        // Scarica File Backup .json
+        const btnDownloadFile = document.getElementById('btn-download-backup-file');
+        if (btnDownloadFile) {
+            btnDownloadFile.addEventListener('click', () => {
+                this.exportSaveFile();
+            });
+        }
+
+        // Copia Codice Backup Testuale
+        const btnCopyCode = document.getElementById('btn-copy-backup-code');
+        if (btnCopyCode) {
+            btnCopyCode.addEventListener('click', () => {
+                this.copyBackupCode();
+            });
+        }
+
+        // Selezione File dal Dispositivo
+        const btnSelectFile = document.getElementById('btn-select-import-file');
+        const fileInput = document.getElementById('import-file-input');
+        if (btnSelectFile && fileInput) {
+            btnSelectFile.addEventListener('click', () => {
+                fileInput.click();
+            });
+            fileInput.addEventListener('change', (e) => {
+                const file = e.target.files && e.target.files[0];
+                if (file) this.handleImportFile(file);
+            });
+        }
+
+        // Drag & Drop File
+        const dropzone = document.getElementById('import-dropzone');
+        if (dropzone) {
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropzone.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    dropzone.classList.add('dragover');
+                });
+            });
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropzone.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    dropzone.classList.remove('dragover');
+                });
+            });
+            dropzone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                const dt = e.dataTransfer;
+                const file = dt && dt.files && dt.files[0];
+                if (file) this.handleImportFile(file);
+            });
+        }
+
+        // Verifica Codice Incollato
+        const btnVerify = document.getElementById('btn-verify-import-data');
+        if (btnVerify) {
+            btnVerify.addEventListener('click', () => {
+                const textInput = document.getElementById('import-code-input');
+                const raw = textInput ? textInput.value.trim() : '';
+                if (!raw) {
+                    this.showToastNotification('Incolla prima il codice o il file JSON ⚠️');
+                    return;
+                }
+                this.verifyAndPreviewImport(raw);
+            });
+        }
+
+        // Conferma Ripristino
+        const btnConfirmRestore = document.getElementById('btn-confirm-restore-save');
+        if (btnConfirmRestore) {
+            btnConfirmRestore.addEventListener('click', () => {
+                this.confirmRestoreSave();
+            });
+        }
+
+        // Ripristino Snapshot Emergenza
+        const btnEmergency = document.getElementById('btn-emergency-restore-save');
+        if (btnEmergency) {
+            btnEmergency.addEventListener('click', () => {
+                this.restoreEmergencySnapshot();
+            });
+        }
+
+        // Modale Auto-Detection Link Sync (Conferma e Annulla)
+        const btnSyncAccept = document.getElementById('btn-sync-accept');
+        if (btnSyncAccept) {
+            btnSyncAccept.addEventListener('click', () => {
+                this.applySyncUrlPayload();
+            });
+        }
+
+        const btnSyncCancel = document.getElementById('btn-sync-cancel');
+        if (btnSyncCancel) {
+            btnSyncCancel.addEventListener('click', () => {
+                window.soundEngine.playClick();
+                if (this.modalSyncConfirm) this.modalSyncConfirm.classList.remove('active');
+                if (window.history && window.history.replaceState) {
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                }
+            });
+        }
+    }
+
+    openBackupModal(defaultTab = 'cloud') {
+        this.switchBackupTab(defaultTab);
+        this.generateSyncUrlAndQR();
+        this.populateExportCode();
+        this.checkEmergencySnapshotVisibility();
+
+        const prevCard = document.getElementById('backup-preview-card');
+        if (prevCard) prevCard.style.display = 'none';
+        this.pendingImportData = null;
+
+        if (this.modalBackup) this.modalBackup.classList.add('active');
+    }
+
+    switchBackupTab(tabName) {
+        document.querySelectorAll('.backup-tab-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.getAttribute('data-tab') === tabName);
+        });
+        document.querySelectorAll('.backup-tab-content').forEach(content => {
+            content.classList.toggle('active', content.id === `tab-backup-${tabName}`);
+        });
+    }
+
+    generateSyncUrlAndQR() {
+        try {
+            const jsonStr = JSON.stringify(this.saveData);
+            const b64 = btoa(encodeURIComponent(jsonStr).replace(/%([0-9A-F]{2})/g, (match, p1) => {
+                return String.fromCharCode(parseInt(p1, 16));
+            }));
+
+            const cleanOrigin = (window.location.origin && window.location.origin !== 'null') ? window.location.origin : 'https://ingdesantispaolo-bot.github.io';
+            const cleanPath = window.location.pathname || '/tabelline-game/';
+            const syncUrl = `${cleanOrigin}${cleanPath}?sync=${encodeURIComponent(b64)}`;
+
+            const inputUrl = document.getElementById('sync-share-url-input');
+            if (inputUrl) inputUrl.value = syncUrl;
+
+            const qrImg = document.getElementById('sync-qr-img');
+            const qrLoading = document.getElementById('sync-qr-loading');
+            if (qrImg) {
+                const qrEndpoint = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(syncUrl)}`;
+                qrImg.onload = () => {
+                    if (qrLoading) qrLoading.style.display = 'none';
+                    qrImg.style.display = 'block';
+                };
+                qrImg.onerror = () => {
+                    if (qrLoading) qrLoading.textContent = 'Codice pronto per la copia 📋';
+                };
+                qrImg.src = qrEndpoint;
+            }
+        } catch (e) {
+            console.warn('Errore generazione Sync URL/QR', e);
+        }
+    }
+
+    populateExportCode() {
+        const textarea = document.getElementById('export-code-textarea');
+        if (textarea) {
+            textarea.value = JSON.stringify(this.saveData);
+        }
+    }
+
+    exportSaveFile() {
+        window.soundEngine.playClick();
+        try {
+            const jsonStr = JSON.stringify(this.saveData, null, 2);
+            const blob = new Blob([jsonStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const safeName = (this.saveData.playerName || 'giocatore').replace(/[^a-zA-Z0-9_-]/g, '_');
+            const dateStr = new Date().toISOString().slice(0, 10);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `matemagica_backup_${safeName}_${dateStr}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            this.showToastNotification('Backup scaricato con successo! 📥');
+        } catch (e) {
+            this.showToastNotification('Errore creazione file di backup ❌');
+        }
+    }
+
+    copyBackupCode() {
+        window.soundEngine.playClick();
+        const jsonStr = JSON.stringify(this.saveData);
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(jsonStr).then(() => {
+                this.showToastNotification('📋 Codice di backup copiato negli appunti!');
+            }).catch(() => {
+                this.showToastNotification('Copia il testo dal riquadro 📋');
+            });
+        } else {
+            this.showToastNotification('Copia il testo dal riquadro 📋');
+        }
+    }
+
+    copySyncUrl() {
+        window.soundEngine.playClick();
+        const inputUrl = document.getElementById('sync-share-url-input');
+        const url = inputUrl ? inputUrl.value : '';
+        if (!url) return;
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(url).then(() => {
+                this.showToastNotification('🔗 Link di sincronizzazione copiato! Invialo al tuo tablet.');
+            }).catch(() => {
+                this.showToastNotification('Copia il link manualmente dal riquadro 📋');
+            });
+        } else {
+            this.showToastNotification('Copia il link manualmente dal riquadro 📋');
+        }
+    }
+
+    handleImportFile(file) {
+        if (!file.name.endsWith('.json')) {
+            this.showToastNotification('Seleziona un file con estensione .json ⚠️');
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const content = e.target.result;
+            this.verifyAndPreviewImport(content);
+        };
+        reader.onerror = () => {
+            this.showToastNotification('Errore di lettura del file ❌');
+        };
+        reader.readAsText(file);
+    }
+
+    verifyAndPreviewImport(rawText) {
+        try {
+            let parsed = null;
+            const trimmed = rawText.trim();
+            if (trimmed.startsWith('{')) {
+                parsed = JSON.parse(trimmed);
+            } else {
+                const decodedStr = decodeURIComponent(Array.prototype.map.call(atob(trimmed), (c) => {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+                parsed = JSON.parse(decodedStr);
+            }
+
+            if (!parsed || (parsed.stars === undefined && parsed.unlockedLevel === undefined && parsed.playerName === undefined)) {
+                this.showToastNotification('Formato salvataggio non riconosciuto ❌');
+                return;
+            }
+
+            this.pendingImportData = parsed;
+
+            const elName = document.getElementById('prev-player-name');
+            const elLvl = document.getElementById('prev-player-lvl');
+            const elStars = document.getElementById('prev-stars-count');
+            const elTrophies = document.getElementById('prev-trophies-count');
+            const prevCard = document.getElementById('backup-preview-card');
+
+            const starsTotal = Object.values(parsed.stars || {}).reduce((a, b) => a + b, 0);
+            const trophiesTotal = (parsed.trophies || []).length;
+
+            if (elName) elName.textContent = parsed.playerName || 'Ingegnere';
+            if (elLvl) elLvl.textContent = `Livello ${parsed.level || 1} (Mappa Liv. ${parsed.unlockedLevel || 1})`;
+            if (elStars) elStars.textContent = `${starsTotal} ⭐`;
+            if (elTrophies) elTrophies.textContent = `${trophiesTotal} 🏆`;
+
+            if (prevCard) {
+                prevCard.style.display = 'block';
+                prevCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+
+            window.soundEngine.playWhoosh();
+            this.showToastNotification('Dati analizzati! Verifica l\'anteprima sotto e conferma 👍');
+        } catch (e) {
+            console.warn('Errore parsing import', e);
+            this.showToastNotification('Errore: formato JSON o codice non valido ❌');
+        }
+    }
+
+    confirmRestoreSave() {
+        if (!this.pendingImportData) return;
+        window.soundEngine.playClick();
+
+        try {
+            localStorage.setItem('matemagica_backup_snapshot', JSON.stringify(this.saveData));
+        } catch (e) {}
+
+        this.saveData = Object.assign(this.loadSaveData(), this.pendingImportData);
+        this.saveGame();
+
+        this.updateHeaderStats();
+        this.renderLevelsMap();
+        this.renderTrophiesModal();
+        this.renderAvatarCatalog();
+        this.checkAvatarUnlocks();
+
+        if (window.soundEngine && window.soundEngine.playLevelUp) {
+            window.soundEngine.playLevelUp();
+        } else if (window.soundEngine) {
+            window.soundEngine.playVictory();
+        }
+        if (window.confetti && window.confetti.burst) {
+            window.confetti.burst(window.innerWidth / 2, window.innerHeight * 0.35, 75);
+        }
+
+        if (this.modalBackup) this.modalBackup.classList.remove('active');
+        this.pendingImportData = null;
+        this.showToastNotification('🎉 Partita ripristinata con successo!');
+    }
+
+    checkEmergencySnapshotVisibility() {
+        const snapBox = document.getElementById('emergency-restore-box');
+        if (!snapBox) return;
+        const snap = localStorage.getItem('matemagica_backup_snapshot');
+        snapBox.style.display = snap ? 'flex' : 'none';
+    }
+
+    restoreEmergencySnapshot() {
+        const raw = localStorage.getItem('matemagica_backup_snapshot');
+        if (!raw) return;
+        try {
+            const parsed = JSON.parse(raw);
+            if (confirm('Vuoi ripristinare l\'ultimo snapshot di emergenza registrato prima delle modifiche?')) {
+                this.saveData = parsed;
+                this.saveGame();
+                this.updateHeaderStats();
+                this.renderLevelsMap();
+                this.renderTrophiesModal();
+                this.renderAvatarCatalog();
+                this.checkAvatarUnlocks();
+                if (this.modalBackup) this.modalBackup.classList.remove('active');
+                this.showToastNotification('Snapshot di emergenza ripristinato! 🔄');
+            }
+        } catch (e) {
+            this.showToastNotification('Errore ripristino snapshot ❌');
+        }
+    }
+
+    checkUrlForSyncPayload() {
+        try {
+            const params = new URLSearchParams(window.location.search);
+            const syncPayload = params.get('sync');
+            if (!syncPayload) return;
+
+            const decodedStr = decodeURIComponent(Array.prototype.map.call(atob(syncPayload), (c) => {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+            const parsed = JSON.parse(decodedStr);
+
+            if (parsed && (parsed.stars !== undefined || parsed.unlockedLevel !== undefined || parsed.playerName !== undefined)) {
+                this.pendingSyncUrlData = parsed;
+                const starsTotal = Object.values(parsed.stars || {}).reduce((a, b) => a + b, 0);
+
+                const elName = document.getElementById('sync-incoming-name');
+                const elAvatar = document.getElementById('sync-incoming-avatar');
+                const elStars = document.getElementById('sync-incoming-stars');
+                const elLvl = document.getElementById('sync-incoming-lvl');
+
+                if (elName) elName.textContent = parsed.playerName || 'Ingegnere';
+                if (elAvatar) elAvatar.textContent = this.getAvatar(parsed.avatarId)?.icon || '🧑‍🚀';
+                if (elStars) elStars.textContent = starsTotal;
+                if (elLvl) elLvl.textContent = parsed.level || 1;
+
+                if (this.modalSyncConfirm) {
+                    this.modalSyncConfirm.classList.add('active');
+                    if (window.soundEngine && window.soundEngine.playWhoosh) window.soundEngine.playWhoosh();
+                }
+            }
+        } catch (e) {
+            console.warn('Errore lettura sync da URL', e);
+        }
+    }
+
+    applySyncUrlPayload() {
+        if (!this.pendingSyncUrlData) return;
+        window.soundEngine.playClick();
+
+        try {
+            localStorage.setItem('matemagica_backup_snapshot', JSON.stringify(this.saveData));
+        } catch (e) {}
+
+        this.saveData = Object.assign(this.loadSaveData(), this.pendingSyncUrlData);
+        this.saveGame();
+
+        this.updateHeaderStats();
+        this.renderLevelsMap();
+        this.renderTrophiesModal();
+        this.renderAvatarCatalog();
+        this.checkAvatarUnlocks();
+
+        if (window.soundEngine && window.soundEngine.playLevelUp) {
+            window.soundEngine.playLevelUp();
+        } else if (window.soundEngine) {
+            window.soundEngine.playVictory();
+        }
+        if (window.confetti && window.confetti.burst) {
+            window.confetti.burst(window.innerWidth / 2, window.innerHeight * 0.35, 80);
+        }
+
+        if (this.modalSyncConfirm) this.modalSyncConfirm.classList.remove('active');
+        this.pendingSyncUrlData = null;
+
+        if (window.history && window.history.replaceState) {
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+
+        this.showToastNotification('🎉 Dispositivo sincronizzato con successo!');
     }
 
     showToastNotification(text) {
