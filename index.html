@@ -18,7 +18,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700;800;900&family=Nunito:wght@600;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=7">
+    <link rel="stylesheet" href="styles.css?v=8">
 </head>
 <body class="dark-theme">
 
@@ -99,6 +99,15 @@
                     <h2>Accademia dei Trucchi</h2>
                     <p>I segreti matematici per calcolare a mente in 2 secondi: per 11, quadrati del 5, basi 100 e percentuali lampo!</p>
                     <button class="btn-play-card">Esplora Trucchi ➔</button>
+                </div>
+
+                <!-- Modalità Laboratorio di Geometria (AAA Highlight) -->
+                <div class="mode-card geometry" id="btn-mode-geometry">
+                    <div class="mode-badge">★ Formule & Figure Live</div>
+                    <div class="mode-icon">📐</div>
+                    <h2>Laboratorio di Geometria</h2>
+                    <p>Formule interattive, Teorema di Pitagora, perimetri, aree, cerchi e solidi 3D con disegni quotati dinamici e sfide a quiz!</p>
+                    <button class="btn-play-card">Esplora Geometria ➔</button>
                 </div>
 
                 <!-- Modalità Avventura -->
@@ -423,6 +432,404 @@
                             <div class="sim-result-view" id="sim-result-div"></div>
                         </div>
                         <button class="btn-train-trick" data-trick="div5_25"><span>🚀 Allenati sulle Divisioni Flash</span></button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- =================== SCHERMO GEOMETRIA: LABORATORIO & SFIDE (AAA) =================== -->
+        <section id="screen-geometry" class="screen">
+            <div class="screen-header-bar">
+                <button class="btn-back" id="btn-back-geometry">⬅ Home</button>
+                <h2 class="screen-title">📐 Laboratorio & Sfide di Geometria</h2>
+                <div style="width: 80px;"></div>
+            </div>
+
+            <!-- VISTA 1: LABORATORIO DIDATTICO & FIGURE INTERATTIVE -->
+            <div id="geometry-lab-view" class="geometry-subview active">
+                <div class="geometry-hero">
+                    <div class="geometry-hero-badge">📐 Laboratorio Grafico & Ingegneristico</div>
+                    <h2 class="geometry-hero-title">Geometria Interattiva & Figure Quotate</h2>
+                    <p class="geometry-hero-desc">Esplora poligoni, triangoli, Teorema di Pitagora, cerchio e solidi 3D con disegni vettoriali SVG dinamici, manipola le misure in tempo reale, scopri le formule con rigore matematico e mettiti alla prova con sfide mirate!</p>
+                    
+                    <div class="geometry-hero-actions">
+                        <button class="btn-hero-geom-challenge" id="btn-start-mixed-geometry">
+                            <span>⚡ Avvia Gran Sfida Mista di Geometria (10 Domande) ➔</span>
+                        </button>
+                    </div>
+
+                    <div class="geometry-filters-row">
+                        <button class="btn-filter-pill active" data-geom-filter="all">Tutte le Forme (7)</button>
+                        <button class="btn-filter-pill" data-geom-filter="quadrilateri">Quadrilateri</button>
+                        <button class="btn-filter-pill" data-geom-filter="triangoli">Triangoli & Pitagora</button>
+                        <button class="btn-filter-pill" data-geom-filter="cerchio">Cerchio & Rotondi</button>
+                        <button class="btn-filter-pill" data-geom-filter="solidi">Solidi 3D</button>
+                    </div>
+                </div>
+
+                <!-- Griglia delle Schede di Geometria -->
+                <div class="geometry-cards-grid" id="geometry-cards-grid">
+                    
+                    <!-- 1. QUADRATO -->
+                    <div class="geom-card" data-category="quadrilateri" id="card-geom-square">
+                        <div class="geom-card-header">
+                            <span class="geom-badge">📐 Poligono Regolare</span>
+                            <div class="geom-icon">⏹️</div>
+                            <h3 class="geom-name">Quadrato (Equilatero & Rettangolo)</h3>
+                            <p class="geom-tagline">4 lati congruenti e 4 angoli retti di 90°: simmetria perfetta!</p>
+                        </div>
+                        
+                        <!-- Box SVG Interattivo Dinamico -->
+                        <div class="geom-svg-box" id="geom-svg-box-square"></div>
+
+                        <div class="geom-body">
+                            <div class="geom-section">
+                                <h4 class="geom-sect-title">💡 Proprietà & Concetti Fondamentali</h4>
+                                <p class="geom-text">Il quadrato è il poligono regolare a 4 lati. Il perimetro è la somma dei 4 lati (4 × l), l'area è il quadrato del lato (l²). La diagonale (d = l√2) lo divide in due triangoli rettangoli isosceli di 45°.</p>
+                            </div>
+                            <div class="geom-section math-proof">
+                                <h4 class="geom-sect-title">📐 Formule Rigorose & Inverse</h4>
+                                <code>Perimetro: P = 4 · l  |  Lato inverso: l = P / 4</code>
+                                <code>Area: A = l²  |  Lato inverso: l = √A</code>
+                                <code>Diagonale: d = l · √2 ≈ 1.4142 · l</code>
+                            </div>
+                            <!-- Simulatore Parametrico -->
+                            <div class="geom-interactive-box">
+                                <div class="sim-controls">
+                                    <label for="sim-input-sq-l">Lato l (cm):</label>
+                                    <input type="number" id="sim-input-sq-l" value="6" min="2" max="50" class="sim-num-input">
+                                    <button class="btn-sim-calc" id="btn-calc-geom-sq">Calcola</button>
+                                    <button class="btn-sim-rnd" id="btn-rnd-geom-sq" title="Misure a caso">🎲</button>
+                                </div>
+                                <div class="sim-result-view" id="sim-result-geom-sq"></div>
+                            </div>
+                            <button class="btn-train-geom" data-shape="square"><span>🚀 Allenati sul Quadrato</span></button>
+                        </div>
+                    </div>
+
+                    <!-- 2. RETTANGOLO -->
+                    <div class="geom-card" data-category="quadrilateri" id="card-geom-rect">
+                        <div class="geom-card-header">
+                            <span class="geom-badge">📏 Quadrilatero</span>
+                            <div class="geom-icon">▭</div>
+                            <h3 class="geom-name">Rettangolo (Base & Altezza)</h3>
+                            <p class="geom-tagline">Lati opposti paralleli e congruenti a coppie con 4 angoli di 90°.</p>
+                        </div>
+
+                        <div class="geom-svg-box" id="geom-svg-box-rect"></div>
+
+                        <div class="geom-body">
+                            <div class="geom-section">
+                                <h4 class="geom-sect-title">💡 Proprietà & Concetti Fondamentali</h4>
+                                <p class="geom-text">Il perimetro racchiude 2 basi (b) e 2 altezze (h). L'area è il prodotto b × h. Per il Teorema di Pitagora, la diagonale è l'ipotenusa del triangolo rettangolo formato da base e altezza.</p>
+                            </div>
+                            <div class="geom-section math-proof">
+                                <h4 class="geom-sect-title">📐 Formule Rigorose & Inverse</h4>
+                                <code>Perimetro: P = 2 · (b + h)</code>
+                                <code>Area: A = b · h  |  b = A / h  |  h = A / b</code>
+                                <code>Diagonale: d = √(b² + h²)</code>
+                            </div>
+                            <div class="geom-interactive-box">
+                                <div class="sim-controls">
+                                    <label for="sim-input-rec-b">b (cm):</label>
+                                    <input type="number" id="sim-input-rec-b" value="8" min="2" max="60" class="sim-num-input small">
+                                    <label for="sim-input-rec-h">h (cm):</label>
+                                    <input type="number" id="sim-input-rec-h" value="5" min="2" max="60" class="sim-num-input small">
+                                    <button class="btn-sim-calc" id="btn-calc-geom-rec">Calcola</button>
+                                    <button class="btn-sim-rnd" id="btn-rnd-geom-rec">🎲</button>
+                                </div>
+                                <div class="sim-result-view" id="sim-result-geom-rec"></div>
+                            </div>
+                            <button class="btn-train-geom" data-shape="rectangle"><span>🚀 Allenati sul Rettangolo</span></button>
+                        </div>
+                    </div>
+
+                    <!-- 3. TRIANGOLO RETTANGOLO & TEOREMA DI PITAGORA -->
+                    <div class="geom-card" data-category="triangoli" id="card-geom-pyth">
+                        <div class="geom-card-header">
+                            <span class="geom-badge">💎 Teorema di Pitagora</span>
+                            <div class="geom-icon">📐</div>
+                            <h3 class="geom-name">Triangolo Rettangolo & Pitagora</h3>
+                            <p class="geom-tagline">La relazione regina dell'ingegneria: c₁² + c₂² = i²!</p>
+                        </div>
+
+                        <div class="geom-svg-box" id="geom-svg-box-pyth"></div>
+
+                        <div class="geom-body">
+                            <div class="geom-section">
+                                <h4 class="geom-sect-title">💡 Come Funziona il Teorema</h4>
+                                <p class="geom-text">In ogni triangolo rettangolo, l'area del quadrato costruito sull'ipotenusa (i) equivale alla somma delle aree dei quadrati costruiti sui cateti (c₁, c₂).</p>
+                            </div>
+                            <div class="geom-section math-proof">
+                                <h4 class="geom-sect-title">📐 Formule Rigorose & Terne Famose</h4>
+                                <code>Ipotenusa: i = √(c₁² + c₂²)</code>
+                                <code>Cateto inverso: c₁ = √(i² - c₂²)</code>
+                                <code>Area: A = (c₁ · c₂) / 2  |  Perimetro: P = c₁ + c₂ + i</code>
+                                <code>Terne Famose: (3, 4, 5) • (5, 12, 13) • (6, 8, 10) • (8, 15, 17)</code>
+                            </div>
+                            <div class="geom-interactive-box">
+                                <div class="sim-controls">
+                                    <label for="sim-input-pyth-c1">c₁ (cm):</label>
+                                    <input type="number" id="sim-input-pyth-c1" value="6" min="1" max="50" class="sim-num-input small">
+                                    <label for="sim-input-pyth-c2">c₂ (cm):</label>
+                                    <input type="number" id="sim-input-pyth-c2" value="8" min="1" max="50" class="sim-num-input small">
+                                    <button class="btn-sim-calc" id="btn-calc-geom-pyth">Calcola</button>
+                                    <button class="btn-sim-rnd" id="btn-rnd-geom-pyth">🎲</button>
+                                </div>
+                                <div class="sim-result-view" id="sim-result-geom-pyth"></div>
+                            </div>
+                            <button class="btn-train-geom" data-shape="pythagoras"><span>🚀 Allenati su Pitagora</span></button>
+                        </div>
+                    </div>
+
+                    <!-- 4. TRIANGOLO GENERICO & ISOSCELE -->
+                    <div class="geom-card" data-category="triangoli" id="card-geom-triangle">
+                        <div class="geom-card-header">
+                            <span class="geom-badge">🔺 Base × Altezza / 2</span>
+                            <div class="geom-icon">🔺</div>
+                            <h3 class="geom-name">Triangolo Generico & Isoscele</h3>
+                            <p class="geom-tagline">Qualsiasi triangolo è la metà esatta del rettangolo circoscritto.</p>
+                        </div>
+
+                        <div class="geom-svg-box" id="geom-svg-box-triangle"></div>
+
+                        <div class="geom-body">
+                            <div class="geom-section">
+                                <h4 class="geom-sect-title">💡 Proprietà & Concetti Fondamentali</h4>
+                                <p class="geom-text">L'area misura sempre (b × h) / 2. Nel triangolo isoscele con due lati obliqui uguali (l), l'altezza cade esattamente nel punto medio della base dividendo il triangolo in due metà simmetriche rette.</p>
+                            </div>
+                            <div class="geom-section math-proof">
+                                <h4 class="geom-sect-title">📐 Formule Rigorose & Inverse</h4>
+                                <code>Area: A = (b · h) / 2</code>
+                                <code>Base inversa: b = (2 · A) / h  |  Altezza: h = (2 · A) / b</code>
+                                <code>Isoscele: Lato l = √((b/2)² + h²)  |  P = b + 2l</code>
+                            </div>
+                            <div class="geom-interactive-box">
+                                <div class="sim-controls">
+                                    <label for="sim-input-tri-b">Base b (cm):</label>
+                                    <input type="number" id="sim-input-tri-b" value="10" min="2" max="60" class="sim-num-input small">
+                                    <label for="sim-input-tri-h">Altezza h (cm):</label>
+                                    <input type="number" id="sim-input-tri-h" value="12" min="2" max="60" class="sim-num-input small">
+                                    <button class="btn-sim-calc" id="btn-calc-geom-tri">Calcola</button>
+                                    <button class="btn-sim-rnd" id="btn-rnd-geom-tri">🎲</button>
+                                </div>
+                                <div class="sim-result-view" id="sim-result-geom-tri"></div>
+                            </div>
+                            <button class="btn-train-geom" data-shape="triangle"><span>🚀 Allenati sui Triangoli</span></button>
+                        </div>
+                    </div>
+
+                    <!-- 5. ROMBO & TRAPEZIO -->
+                    <div class="geom-card" data-category="quadrilateri" id="card-geom-rhombus">
+                        <div class="geom-card-header">
+                            <span class="geom-badge">🔷 Diagonali & Basi Parallele</span>
+                            <div class="geom-icon">💠</div>
+                            <h3 class="geom-name">Rombo & Trapezio</h3>
+                            <p class="geom-tagline">Rombo: diagonali perpendicolari • Trapezio: somma delle basi per altezza.</p>
+                        </div>
+
+                        <div class="geom-svg-box" id="geom-svg-box-rhombus"></div>
+
+                        <div class="geom-body">
+                            <div class="geom-section">
+                                <h4 class="geom-sect-title">💡 Proprietà & Concetti Fondamentali</h4>
+                                <p class="geom-text">Il rombo ha 4 lati uguali e diagonali ortogonali: la sua area è metà del rettangolo circoscritto ((D · d)/2). Il trapezio ha basi parallele B e b: la sua area è la somma delle due basi per altezza diviso 2.</p>
+                            </div>
+                            <div class="geom-section math-proof">
+                                <h4 class="geom-sect-title">📐 Formule Rigorose</h4>
+                                <code>Rombo Area: A = (D · d) / 2  |  Lato: l = √((D/2)² + (d/2)²)</code>
+                                <code>Trapezio Area: A = ((B + b) · h) / 2</code>
+                                <code>Rombo Inverso: D = (2 · A) / d  |  d = (2 · A) / D</code>
+                            </div>
+                            <div class="geom-interactive-box">
+                                <div class="sim-controls">
+                                    <select id="sim-select-geom-poly" class="sim-select">
+                                        <option value="rhombus">Rombo (Diagonali D, d)</option>
+                                        <option value="trapezoid">Trapezio (Basi B, b, h)</option>
+                                    </select>
+                                    <div id="sim-poly-inputs-row" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:6px;">
+                                        <label for="sim-input-poly-v1" id="lbl-poly-v1">D (cm):</label>
+                                        <input type="number" id="sim-input-poly-v1" value="12" min="2" max="60" class="sim-num-input small">
+                                        <label for="sim-input-poly-v2" id="lbl-poly-v2">d (cm):</label>
+                                        <input type="number" id="sim-input-poly-v2" value="8" min="2" max="60" class="sim-num-input small">
+                                        <span id="sim-poly-v3-wrapper" style="display:none;">
+                                            <label for="sim-input-poly-v3">h (cm):</label>
+                                            <input type="number" id="sim-input-poly-v3" value="5" min="2" max="60" class="sim-num-input small">
+                                        </span>
+                                    </div>
+                                    <button class="btn-sim-calc" id="btn-calc-geom-poly">Calcola</button>
+                                    <button class="btn-sim-rnd" id="btn-rnd-geom-poly">🎲</button>
+                                </div>
+                                <div class="sim-result-view" id="sim-result-geom-poly"></div>
+                            </div>
+                            <button class="btn-train-geom" data-shape="rhombus_trapezoid"><span>🚀 Allenati su Rombo & Trapezio</span></button>
+                        </div>
+                    </div>
+
+                    <!-- 6. CERCHIO & CIRCONFERENZA -->
+                    <div class="geom-card" data-category="cerchio" id="card-geom-circle">
+                        <div class="geom-card-header">
+                            <span class="geom-badge">⭕ Costante π ≈ 3.14</span>
+                            <div class="geom-icon">🔴</div>
+                            <h3 class="geom-name">Circonferenza & Cerchio</h3>
+                            <p class="geom-tagline">Tutti i punti equidistanti dal centro a distanza raggio r.</p>
+                        </div>
+
+                        <div class="geom-svg-box" id="geom-svg-box-circle"></div>
+
+                        <div class="geom-body">
+                            <div class="geom-section">
+                                <h4 class="geom-sect-title">💡 Proprietà & Concetti Fondamentali</h4>
+                                <p class="geom-text">Il diametro (d = 2r) attraversa il centro. La lunghezza della circonferenza è C = 2πr. L'area del cerchio è πr²: una delle formule più eleganti e potenti della matematica.</p>
+                            </div>
+                            <div class="geom-section math-proof">
+                                <h4 class="geom-sect-title">📐 Formule Rigorose & Valore π</h4>
+                                <code>Diametro: d = 2 · r</code>
+                                <code>Circonferenza: C = 2 · π · r = π · d (π ≈ 3.14)</code>
+                                <code>Area: A = π · r²  |  Raggio inverso: r = √(A / π)</code>
+                            </div>
+                            <div class="geom-interactive-box">
+                                <div class="sim-controls">
+                                    <label for="sim-input-circle-r">Raggio r (cm):</label>
+                                    <input type="number" id="sim-input-circle-r" value="5" min="1" max="40" class="sim-num-input">
+                                    <button class="btn-sim-calc" id="btn-calc-geom-circle">Calcola</button>
+                                    <button class="btn-sim-rnd" id="btn-rnd-geom-circle">🎲</button>
+                                </div>
+                                <div class="sim-result-view" id="sim-result-geom-circle"></div>
+                            </div>
+                            <button class="btn-train-geom" data-shape="circle"><span>🚀 Allenati sul Cerchio</span></button>
+                        </div>
+                    </div>
+
+                    <!-- 7. SOLIDI 3D: CUBO & PARALLELEPIPEDO -->
+                    <div class="geom-card" data-category="solidi" id="card-geom-solids">
+                        <div class="geom-card-header">
+                            <span class="geom-badge">📦 Geometria nello Spazio</span>
+                            <div class="geom-icon">🧊</div>
+                            <h3 class="geom-name">Solidi 3D: Cubo & Parallelepipedo</h3>
+                            <p class="geom-tagline">Volumi in cm³ e superfici totali nello spazio tridimensionale.</p>
+                        </div>
+
+                        <div class="geom-svg-box" id="geom-svg-box-solids"></div>
+
+                        <div class="geom-body">
+                            <div class="geom-section">
+                                <h4 class="geom-sect-title">💡 Proprietà & Concetti Fondamentali</h4>
+                                <p class="geom-text">Nello spazio 3D il volume quantifica lo spazio occupato (cm³), mentre la superficie totale somma le aree di tutte le facce esterne (cm²). Il cubo ha 6 facce quadrate congruenti.</p>
+                            </div>
+                            <div class="geom-section math-proof">
+                                <h4 class="geom-sect-title">📐 Formule Rigorose</h4>
+                                <code>Cubo: Volume V = s³  |  Superficie Totale S_tot = 6 · s²</code>
+                                <code>Parallelepipedo: V = a · b · c  |  S_tot = 2·(a·b + b·c + a·c)</code>
+                                <code>Diagonale Cubo: d = s · √3 ≈ 1.732 · s</code>
+                            </div>
+                            <div class="geom-interactive-box">
+                                <div class="sim-controls">
+                                    <select id="sim-select-geom-solid" class="sim-select">
+                                        <option value="cube">Cubo (Spigolo s)</option>
+                                        <option value="cuboid">Parallelepipedo (Spigoli a, b, c)</option>
+                                    </select>
+                                    <div id="sim-solid-inputs-row" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:6px;">
+                                        <label for="sim-input-solid-s" id="lbl-solid-s">s (cm):</label>
+                                        <input type="number" id="sim-input-solid-s" value="4" min="1" max="25" class="sim-num-input small">
+                                        <span id="sim-solid-extra-wrapper" style="display:none;">
+                                            <label for="sim-input-solid-b">b (cm):</label>
+                                            <input type="number" id="sim-input-solid-b" value="5" min="1" max="25" class="sim-num-input small">
+                                            <label for="sim-input-solid-c">c (cm):</label>
+                                            <input type="number" id="sim-input-solid-c" value="6" min="1" max="25" class="sim-num-input small">
+                                        </span>
+                                    </div>
+                                    <button class="btn-sim-calc" id="btn-calc-geom-solid">Calcola</button>
+                                    <button class="btn-sim-rnd" id="btn-rnd-geom-solid">🎲</button>
+                                </div>
+                                <div class="sim-result-view" id="sim-result-geom-solid"></div>
+                            </div>
+                            <button class="btn-train-geom" data-shape="solids"><span>🚀 Allenati sui Solidi 3D</span></button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- VISTA 2: ARENA DI ALLENAMENTO & SFIDA GEOMETRICA -->
+            <div id="geometry-workout-view" class="geometry-subview">
+                <div class="geom-workout-card">
+                    <!-- HUD Workout -->
+                    <div class="geom-workout-hud">
+                        <button class="btn-back-geom-lab" id="btn-back-geom-lab">❮ Torna al Laboratorio</button>
+                        <div class="geom-hud-badge" id="geom-hud-progress">Domanda 1 / 10</div>
+                        <div class="geom-hud-score-combo">
+                            <span class="hud-combo-badge" id="geom-hud-combo" style="display: none;">🔥 COMBO x2!</span>
+                            <span class="geom-score-val" id="geom-hud-score">0 pt</span>
+                        </div>
+                    </div>
+
+                    <!-- Area del Problema -->
+                    <div class="geom-problem-box">
+                        <div class="geom-problem-topic-pill" id="geom-problem-topic">📐 TRIANGOLO RETTANGOLO: PITAGORA</div>
+                        <h3 class="geom-problem-text" id="geom-problem-text">Dati i cateti c₁ = 6 cm e c₂ = 8 cm, quanto misura l'ipotenusa i?</h3>
+                        
+                        <!-- Diagramma SVG Dinamico con Quote reali -->
+                        <div class="geom-problem-svg-container" id="geom-problem-svg-container"></div>
+
+                        <!-- Feedback animato con formula e spiegazione passo-passo -->
+                        <div class="geom-feedback-box" id="geom-feedback-box" style="display: none;"></div>
+
+                        <!-- 4 Opzioni Risposta Touch-Friendly -->
+                        <div class="geom-options-grid" id="geom-options-grid">
+                            <button class="geom-option-btn" data-index="0" id="geom-opt-0">-</button>
+                            <button class="geom-option-btn" data-index="1" id="geom-opt-1">-</button>
+                            <button class="geom-option-btn" data-index="2" id="geom-opt-2">-</button>
+                            <button class="geom-option-btn" data-index="3" id="geom-opt-3">-</button>
+                        </div>
+
+                        <!-- Azioni -->
+                        <div class="geom-problem-actions">
+                            <button class="btn-geom-hint" id="btn-geom-hint">💡 Formula & Guida al Calcolo</button>
+                            <button class="btn-geom-next" id="btn-geom-next" style="display: none;">Domanda Successiva ➔</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VISTA 3: REPORT VITTORIA E STATISTICHE GEOMETRIA -->
+            <div id="geometry-results-view" class="geometry-subview">
+                <div class="results-card geom-results-card">
+                    <div class="results-stars-row">
+                        <span class="result-star" id="geom-res-star-1">★</span>
+                        <span class="result-star" id="geom-res-star-2">★</span>
+                        <span class="result-star" id="geom-res-star-3">★</span>
+                    </div>
+
+                    <h2 class="results-title" id="geom-res-title">Ingegnere della Geometria!</h2>
+                    <p class="results-subtitle" id="geom-res-subtitle">Hai dominato le formule geometriche e i teoremi con precisione millimetrica!</p>
+
+                    <div class="results-stats-grid">
+                        <div class="res-stat-item">
+                            <div class="res-stat-val" id="geom-res-score">1500</div>
+                            <div class="res-stat-lbl">Punti Guadagnati</div>
+                        </div>
+                        <div class="res-stat-item">
+                            <div class="res-stat-val" id="geom-res-accuracy">100%</div>
+                            <div class="res-stat-lbl">Precisione</div>
+                        </div>
+                        <div class="res-stat-item">
+                            <div class="res-stat-val" id="geom-res-combo">x6</div>
+                            <div class="res-stat-lbl">Combo Max</div>
+                        </div>
+                    </div>
+
+                    <div class="mistakes-box" id="geom-mistakes-box" style="display: none;">
+                        <div class="mistakes-title">
+                            <span>📐 Formule da ripassare:</span>
+                        </div>
+                        <div class="mistakes-list" id="geom-mistakes-list"></div>
+                    </div>
+
+                    <div class="results-buttons-row">
+                        <button class="btn-res-action retry" id="btn-geom-res-retry">🔄 Rigioca Sfida</button>
+                        <button class="btn-res-action next" id="btn-geom-res-backlab">📐 Laboratorio Formule ➔</button>
                     </div>
                 </div>
             </div>
@@ -851,6 +1258,9 @@
             <!-- Vista B: Step-by-Step scomposizione per calcoli complessi -->
             <div class="trick-help-view" id="help-modal-trick-view" style="display: none;"></div>
 
+            <!-- Vista C: Diagramma & Formule Geometria -->
+            <div class="geometry-help-view" id="help-modal-geom-view" style="display: none;"></div>
+
             <div>
                 <button class="btn-close-modal" id="btn-close-help">Ho Capito! 👍</button>
             </div>
@@ -1260,9 +1670,9 @@
     </div>
 
     <!-- Script Audio, Effetti e Gioco -->
-    <script src="audio.js?v=7"></script>
-    <script src="confetti.js?v=7"></script>
-    <script src="game.js?v=7"></script>
+    <script src="audio.js?v=8"></script>
+    <script src="confetti.js?v=8"></script>
+    <script src="game.js?v=8"></script>
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {

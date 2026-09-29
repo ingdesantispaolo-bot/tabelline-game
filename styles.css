@@ -5054,5 +5054,595 @@ body.dark-theme .compare-col .col-tag {
     color: var(--text-main);
 }
 
+/* ========================================================
+   MODALITÀ LABORATORIO & SFIDE DI GEOMETRIA (AAA)
+   ======================================================== */
 
+.mode-card.geometry {
+    background: linear-gradient(180deg, #ffffff 0%, #ecfeff 100%);
+    border-color: #a5f3fc;
+    box-shadow: 0 10px 0 #06b6d4, 0 16px 25px rgba(6, 182, 212, 0.28);
+}
+.mode-card.geometry:active { box-shadow: 0 4px 0 #06b6d4; }
+body.dark-theme .mode-card.geometry {
+    background: linear-gradient(180deg, rgba(8, 145, 178, 0.25) 0%, rgba(15, 23, 42, 0.98) 100%);
+    border-color: #0891b2;
+    box-shadow: 0 10px 0 #0e7490, 0 16px 30px rgba(0, 0, 0, 0.5);
+}
 
+/* Subview Geometry */
+.geometry-subview {
+    display: none;
+    width: 100%;
+    animation: fadeIn 0.28s ease-out;
+}
+.geometry-subview.active {
+    display: block;
+}
+
+/* Geometry Hero */
+.geometry-hero {
+    background: linear-gradient(135deg, #042f2e 0%, #115e59 50%, #0f766e 100%);
+    border-radius: var(--radius-xl);
+    padding: 32px 24px;
+    color: white;
+    text-align: center;
+    margin-bottom: 28px;
+    position: relative;
+    box-shadow: 0 16px 36px rgba(15, 118, 110, 0.35);
+    border: 2px solid rgba(45, 212, 191, 0.3);
+}
+.geometry-hero-badge {
+    display: inline-block;
+    background: rgba(45, 212, 191, 0.2);
+    color: #2dd4bf;
+    border: 1px solid rgba(45, 212, 191, 0.5);
+    padding: 6px 16px;
+    border-radius: var(--radius-full);
+    font-size: 0.85rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+}
+.geometry-hero-title {
+    font-size: clamp(1.8rem, 4vw, 2.5rem);
+    font-weight: 900;
+    margin-bottom: 10px;
+    letter-spacing: -0.5px;
+}
+.geometry-hero-desc {
+    font-size: 1.05rem;
+    color: #ccfbf1;
+    max-width: 680px;
+    margin: 0 auto 20px;
+    line-height: 1.5;
+}
+.geometry-hero-actions {
+    margin-bottom: 16px;
+}
+.btn-hero-geom-challenge {
+    background: linear-gradient(135deg, #06b6d4, #0d9488);
+    color: white;
+    font-size: 1.1rem;
+    font-weight: 900;
+    padding: 14px 28px;
+    border-radius: var(--radius-full);
+    border: 2px solid #5eead4;
+    cursor: pointer;
+    box-shadow: 0 8px 20px rgba(13, 148, 136, 0.4), 0 4px 0 #0f766e;
+    transition: transform 0.15s, box-shadow 0.15s;
+    font-family: inherit;
+}
+.btn-hero-geom-challenge:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 26px rgba(13, 148, 136, 0.5), 0 6px 0 #0f766e;
+}
+.btn-hero-geom-challenge:active {
+    transform: translateY(2px);
+    box-shadow: 0 4px 10px rgba(13, 148, 136, 0.4), 0 2px 0 #0f766e;
+}
+
+/* Filtri pill */
+.geometry-filters-row {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+/* Griglia Schede Geometria */
+.geometry-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+    gap: 24px;
+    margin-bottom: 36px;
+}
+
+/* Card Geometria */
+.geom-card {
+    background: white;
+    border-radius: var(--radius-xl);
+    padding: 24px;
+    border: 3px solid #ccfbf1;
+    box-shadow: var(--shadow-soft);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+}
+.geom-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 30px rgba(13, 148, 136, 0.18);
+    border-color: #2dd4bf;
+}
+body.dark-theme .geom-card {
+    background: #1e293b;
+    border-color: #1e3a3a;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+body.dark-theme .geom-card:hover {
+    border-color: #14b8a6;
+    box-shadow: 0 16px 32px rgba(20, 184, 166, 0.25);
+}
+
+.geom-card-header {
+    margin-bottom: 14px;
+    position: relative;
+}
+.geom-badge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: #f0fdfa;
+    color: #0f766e;
+    font-size: 0.75rem;
+    font-weight: 800;
+    padding: 4px 10px;
+    border-radius: var(--radius-full);
+    border: 1px solid #99f6e4;
+}
+body.dark-theme .geom-badge {
+    background: #134e4a;
+    color: #5eead4;
+    border-color: #2dd4bf;
+}
+
+.geom-icon {
+    font-size: 2.2rem;
+    margin-bottom: 8px;
+}
+.geom-name {
+    font-size: 1.25rem;
+    font-weight: 900;
+    color: var(--text-main);
+    margin-bottom: 4px;
+    padding-right: 90px;
+}
+.geom-tagline {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+/* Box SVG Interattivo Dinamico */
+.geom-svg-box {
+    background: #f8fafc;
+    border: 2px dashed #99f6e4;
+    border-radius: var(--radius-lg);
+    padding: 14px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 16px;
+    min-height: 180px;
+    position: relative;
+    overflow: hidden;
+}
+body.dark-theme .geom-svg-box {
+    background: #0f172a;
+    border-color: #134e4a;
+}
+.geom-svg-box svg {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.08));
+}
+
+/* Dettagli e formule */
+.geom-body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex: 1;
+}
+.geom-section {
+    background: #f8fafc;
+    border-radius: var(--radius-md);
+    padding: 12px 14px;
+    border-left: 4px solid #0d9488;
+}
+body.dark-theme .geom-section {
+    background: #0f172a;
+    border-left-color: #14b8a6;
+}
+.geom-sect-title {
+    font-size: 0.85rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #0f766e;
+    margin-bottom: 6px;
+}
+body.dark-theme .geom-sect-title {
+    color: #2dd4bf;
+}
+.geom-text {
+    font-size: 0.88rem;
+    color: var(--text-main);
+    line-height: 1.45;
+}
+.geom-section.math-proof {
+    border-left-color: #06b6d4;
+    background: #f0fdfa;
+}
+body.dark-theme .geom-section.math-proof {
+    background: rgba(8, 145, 178, 0.15);
+    border-left-color: #22d3ee;
+}
+.geom-section.math-proof code {
+    display: block;
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: #0e7490;
+    margin: 4px 0;
+    word-break: break-word;
+}
+body.dark-theme .geom-section.math-proof code {
+    color: #67e8f9;
+}
+
+/* Simulatore Parametrico */
+.geom-interactive-box {
+    background: #fafaf9;
+    border: 2px solid #e7e5e4;
+    border-radius: var(--radius-lg);
+    padding: 14px;
+}
+body.dark-theme .geom-interactive-box {
+    background: #111827;
+    border-color: #374151;
+}
+
+/* Pulsante Allenati sulla Forma */
+.btn-train-geom {
+    width: 100%;
+    margin-top: auto;
+    background: linear-gradient(135deg, #0d9488, #0f766e);
+    color: white;
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 900;
+    padding: 13px;
+    border-radius: var(--radius-full);
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 0 #115e59;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: transform 0.1s, box-shadow 0.1s;
+}
+.btn-train-geom:hover {
+    background: linear-gradient(135deg, #14b8a6, #0d9488);
+}
+.btn-train-geom:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 #115e59;
+}
+
+/* --- VISTA 2: ARENA QUIZ GEOMETRIA (WORKOUT) --- */
+.geom-workout-card {
+    background: var(--card-bg);
+    border-radius: var(--radius-xl);
+    padding: 24px;
+    border: 3px solid #2dd4bf;
+    box-shadow: var(--shadow-medium);
+    max-width: 780px;
+    margin: 0 auto;
+}
+body.dark-theme .geom-workout-card {
+    background: #1e293b;
+    border-color: #14b8a6;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4);
+}
+
+.geom-workout-hud {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding-bottom: 14px;
+    border-bottom: 2px solid var(--border-soft);
+}
+.btn-back-geom-lab {
+    background: #f1f5f9;
+    border: 2px solid #cbd5e1;
+    color: var(--text-dark);
+    font-size: 0.85rem;
+    font-weight: 800;
+    padding: 8px 16px;
+    border-radius: var(--radius-full);
+    cursor: pointer;
+    font-family: inherit;
+}
+body.dark-theme .btn-back-geom-lab {
+    background: #334155;
+    border-color: #475569;
+    color: #f8fafc;
+}
+.geom-hud-badge {
+    background: #ccfbf1;
+    color: #0f766e;
+    font-size: 0.95rem;
+    font-weight: 900;
+    padding: 6px 16px;
+    border-radius: var(--radius-full);
+    border: 1px solid #5eead4;
+}
+body.dark-theme .geom-hud-badge {
+    background: #134e4a;
+    color: #5eead4;
+    border-color: #2dd4bf;
+}
+.geom-hud-score-combo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.geom-score-val {
+    font-size: 1.3rem;
+    font-weight: 900;
+    color: #0d9488;
+}
+body.dark-theme .geom-score-val {
+    color: #2dd4bf;
+}
+
+.geom-problem-box {
+    text-align: center;
+}
+.geom-problem-topic-pill {
+    display: inline-block;
+    background: rgba(13, 148, 136, 0.12);
+    color: #0d9488;
+    font-size: 0.82rem;
+    font-weight: 900;
+    letter-spacing: 1px;
+    padding: 5px 14px;
+    border-radius: var(--radius-full);
+    margin-bottom: 12px;
+}
+body.dark-theme .geom-problem-topic-pill {
+    background: rgba(45, 212, 191, 0.15);
+    color: #5eead4;
+}
+.geom-problem-text {
+    font-size: clamp(1.2rem, 3.5vw, 1.6rem);
+    font-weight: 900;
+    color: var(--text-main);
+    line-height: 1.4;
+    margin-bottom: 16px;
+}
+
+.geom-problem-svg-container {
+    background: #f8fafc;
+    border: 2px dashed #99f6e4;
+    border-radius: var(--radius-lg);
+    padding: 16px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+    min-height: 200px;
+}
+body.dark-theme .geom-problem-svg-container {
+    background: #0f172a;
+    border-color: #134e4a;
+}
+.geom-problem-svg-container svg {
+    max-width: 100%;
+    max-height: 220px;
+    display: block;
+    filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.1));
+}
+
+/* Griglia 4 Opzioni Risposta Reflex */
+.geom-options-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+    margin-bottom: 18px;
+}
+.geom-option-btn {
+    background: white;
+    border: 3px solid #cbd5e1;
+    border-radius: var(--radius-lg);
+    padding: 16px 12px;
+    font-size: clamp(1.05rem, 2.5vw, 1.35rem);
+    font-weight: 900;
+    color: var(--text-dark);
+    font-family: inherit;
+    cursor: pointer;
+    box-shadow: 0 4px 0 #94a3b8;
+    transition: transform 0.12s, box-shadow 0.12s, border-color 0.12s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.geom-option-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    border-color: #0d9488;
+    box-shadow: 0 6px 0 #0f766e;
+}
+.geom-option-btn:active:not(:disabled) {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 #0f766e;
+}
+body.dark-theme .geom-option-btn {
+    background: #334155;
+    border-color: #475569;
+    color: #f8fafc;
+    box-shadow: 0 4px 0 #1e293b;
+}
+.geom-option-btn.correct {
+    background: #dcfce7 !important;
+    border-color: #22c55e !important;
+    color: #15803d !important;
+    box-shadow: 0 4px 0 #16a34a !important;
+    animation: bounceIn 0.3s ease-out;
+}
+.geom-option-btn.wrong {
+    background: #fee2e2 !important;
+    border-color: #ef4444 !important;
+    color: #b91c1c !important;
+    box-shadow: 0 4px 0 #dc2626 !important;
+}
+
+/* Feedback Box */
+.geom-feedback-box {
+    border-radius: var(--radius-md);
+    padding: 14px 18px;
+    font-size: 0.95rem;
+    font-weight: 800;
+    line-height: 1.5;
+    margin-bottom: 16px;
+    animation: fadeIn 0.2s ease-out;
+    text-align: left;
+}
+.geom-feedback-box.correct {
+    background: #ecfdf5;
+    border: 2px solid #86efac;
+    color: #166534;
+}
+.geom-feedback-box.wrong {
+    background: #fef2f2;
+    border: 2px solid #fca5a5;
+    color: #991b1b;
+}
+body.dark-theme .geom-feedback-box.correct {
+    background: rgba(22, 101, 52, 0.35);
+    border-color: #22c55e;
+    color: #86efac;
+}
+body.dark-theme .geom-feedback-box.wrong {
+    background: rgba(153, 27, 27, 0.35);
+    border-color: #ef4444;
+    color: #fca5a5;
+}
+
+/* Azioni Problema */
+.geom-problem-actions {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+.btn-geom-hint {
+    background: #e0f2fe;
+    color: #0369a1;
+    border: 2px solid #7dd3fc;
+    font-weight: 800;
+    font-size: 0.95rem;
+    padding: 10px 20px;
+    border-radius: var(--radius-full);
+    cursor: pointer;
+    font-family: inherit;
+}
+body.dark-theme .btn-geom-hint {
+    background: #0c4a6e;
+    color: #7dd3fc;
+    border-color: #38bdf8;
+}
+.btn-geom-next {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    border: none;
+    font-weight: 900;
+    font-size: 1rem;
+    padding: 12px 24px;
+    border-radius: var(--radius-full);
+    cursor: pointer;
+    font-family: inherit;
+    box-shadow: 0 4px 0 #047857;
+}
+.btn-geom-next:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 #047857;
+}
+
+/* Modale Aiuto Didattico Geometria */
+.geometry-help-view {
+    text-align: left;
+    margin: 14px 0;
+}
+.geometry-help-view .geom-help-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.15rem;
+    font-weight: 900;
+    color: #0d9488;
+    margin-bottom: 10px;
+}
+.geometry-help-view .geom-help-svg-box {
+    background: #f8fafc;
+    border-radius: var(--radius-md);
+    padding: 12px;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 12px;
+}
+body.dark-theme .geometry-help-view .geom-help-svg-box {
+    background: #0f172a;
+}
+.geometry-help-view .geom-help-steps {
+    background: #f0fdfa;
+    border-radius: var(--radius-md);
+    padding: 12px;
+    border-left: 4px solid #0d9488;
+}
+body.dark-theme .geometry-help-view .geom-help-steps {
+    background: #111827;
+}
+.geometry-help-view .step-line {
+    font-size: 0.95rem;
+    color: var(--text-main);
+    margin: 6px 0;
+    line-height: 1.4;
+}
+
+/* Responsive Tablet & Mobile */
+@media (max-width: 640px) {
+    .geom-options-grid {
+        grid-template-columns: 1fr;
+    }
+    .geometry-cards-grid {
+        grid-template-columns: 1fr;
+    }
+    .geom-card-header .geom-badge {
+        position: static;
+        display: inline-block;
+        margin-bottom: 8px;
+    }
+    .geom-name {
+        padding-right: 0;
+    }
+}

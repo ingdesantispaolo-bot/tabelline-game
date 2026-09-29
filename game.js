@@ -416,6 +416,7 @@ class GameManager {
         this.gymDuration = 10;
         this.visualHelpUsed = 0;
         this.initDuelState();
+        this.initGeometryState();
 
         this.initDOM();
         this.bindEvents();
@@ -490,6 +491,7 @@ class GameManager {
         this.screens = {
             home: document.getElementById('screen-home'),
             academy: document.getElementById('screen-academy'),
+            geometry: document.getElementById('screen-geometry'),
             levels: document.getElementById('screen-levels'),
             gym: document.getElementById('screen-gym'),
             duel: document.getElementById('screen-duel'),
@@ -549,6 +551,22 @@ class GameManager {
         const btnBackAcademy = document.getElementById('btn-back-academy');
         if (btnBackAcademy) {
             btnBackAcademy.addEventListener('click', () => {
+                window.soundEngine.playClick();
+                this.showScreen('home');
+            });
+        }
+
+        const btnModeGeometry = document.getElementById('btn-mode-geometry');
+        if (btnModeGeometry) {
+            btnModeGeometry.addEventListener('click', () => {
+                window.soundEngine.playWhoosh();
+                this.showScreen('geometry');
+            });
+        }
+
+        const btnBackGeometry = document.getElementById('btn-back-geometry');
+        if (btnBackGeometry) {
+            btnBackGeometry.addEventListener('click', () => {
                 window.soundEngine.playClick();
                 this.showScreen('home');
             });
@@ -892,6 +910,9 @@ class GameManager {
 
         // Setup Duello 1 vs 1 Split-Screen
         this.bindDuelEvents();
+
+        // Setup Geometria (Laboratorio, Simulatori, Workout)
+        this.setupGeometryEngine();
     }
 
     toggleFullscreen() {
@@ -923,6 +944,9 @@ class GameManager {
             this.renderLevelsMap();
         } else if (screenName === 'academy') {
             this.runAllSimulatorsDefault();
+        } else if (screenName === 'geometry') {
+            this.showGeometrySubView('lab');
+            this.runAllGeometrySimulatorsDefault();
         }
         this.updateHeaderStats();
     }
@@ -3838,6 +3862,1128 @@ class GameManager {
         }
 
         this.showToastNotification('🎉 Dispositivo sincronizzato con successo!');
+    }
+
+    // ========================================================
+    // MOTORE LABORATORIO & SFIDE DI GEOMETRIA (AAA)
+    // ========================================================
+
+    initGeometryState() {
+        this.geometry = {
+            currentShape: 'all',
+            activeSubView: 'lab',
+            workoutQuestions: [],
+            currentQuestionIdx: 0,
+            currentQuestion: null,
+            score: 0,
+            combo: 0,
+            maxCombo: 0,
+            mistakes: [],
+            correctCount: 0,
+            wrongCount: 0,
+            answered: false,
+            advanceTimer: null
+        };
+    }
+
+    setupGeometryEngine() {
+        this.setupGeometryFilters();
+        this.setupGeometrySimulators();
+        this.setupGeometryTrainButtons();
+        this.setupGeometryWorkoutEvents();
+    }
+
+    setupGeometryFilters() {
+        document.querySelectorAll('#screen-geometry .btn-filter-pill').forEach(btn => {
+            btn.addEventListener('click', () => {
+                window.soundEngine.playClick();
+                document.querySelectorAll('#screen-geometry .btn-filter-pill').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                const filter = btn.getAttribute('data-geom-filter');
+                const cards = document.querySelectorAll('#geometry-cards-grid .geom-card');
+                cards.forEach(card => {
+                    const cat = card.getAttribute('data-category');
+                    if (filter === 'all' || cat === filter) {
+                        card.style.display = 'flex';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            });
+        });
+    }
+
+    setupGeometryTrainButtons() {
+        // Tasto Gran Sfida Mista dall'Hero
+        const btnMixed = document.getElementById('btn-start-mixed-geometry');
+        if (btnMixed) {
+            btnMixed.addEventListener('click', () => {
+                window.soundEngine.playWhoosh();
+                this.startGeometryWorkout('mixed');
+            });
+        }
+
+        // Tasti di allenamento mirato su ciascuna forma
+        document.querySelectorAll('.btn-train-geom').forEach(btn => {
+            btn.addEventListener('click', () => {
+                window.soundEngine.playWhoosh();
+                const shape = btn.getAttribute('data-shape');
+                this.startGeometryWorkout(shape);
+            });
+        });
+    }
+
+    showGeometrySubView(subviewName) {
+        document.querySelectorAll('.geometry-subview').forEach(v => v.classList.remove('active'));
+        if (subviewName === 'lab') {
+            const lab = document.getElementById('geometry-lab-view');
+            if (lab) lab.classList.add('active');
+        } else if (subviewName === 'workout') {
+            const workout = document.getElementById('geometry-workout-view');
+            if (workout) workout.classList.add('active');
+        } else if (subviewName === 'results') {
+            const res = document.getElementById('geometry-results-view');
+            if (res) res.classList.add('active');
+        }
+        this.geometry.activeSubView = subviewName;
+    }
+
+    // --- RENDERER SVG VETTORIALI CON QUOTE ED ETICHETTE ---
+    getSvgMarkerDef() {
+        return `
+        <defs>
+            <marker id="geom-arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1.5 L 10 5 L 0 8.5 z" fill="#0284c7"/>
+            </marker>
+            <marker id="geom-arrow-teal" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1.5 L 10 5 L 0 8.5 z" fill="#0d9488"/>
+            </marker>
+        </defs>`;
+    }
+
+    renderSquareSVG(side, isQuiz = false, customText = '') {
+        const marker = this.getSvgMarkerDef();
+        const sideText = customText || `${side} cm`;
+        return `
+        <svg viewBox="0 0 280 180" xmlns="http://www.w3.org/2000/svg">
+            ${marker}
+            <!-- Quadrato principale -->
+            <rect x="80" y="25" width="110" height="110" rx="4" fill="rgba(6,182,212,0.12)" stroke="#06b6d4" stroke-width="3"/>
+            <!-- Linea Diagonale tratteggiata -->
+            <line x1="80" y1="135" x2="190" y2="25" stroke="#ec4899" stroke-width="2" stroke-dasharray="4,4"/>
+            <!-- Quota Lato Inferiore -->
+            <line x1="80" y1="152" x2="190" y2="152" stroke="#0284c7" stroke-width="1.8" marker-start="url(#geom-arrow)" marker-end="url(#geom-arrow)"/>
+            <rect x="110" y="142" width="50" height="20" rx="10" fill="#f0f9ff" stroke="#bae6fd"/>
+            <text x="135" y="156" fill="#0369a1" font-size="11" font-weight="900" text-anchor="middle">l = ${sideText}</text>
+            <!-- Quota Lato Destro -->
+            <line x1="205" y1="25" x2="205" y2="135" stroke="#0284c7" stroke-width="1.8" marker-start="url(#geom-arrow)" marker-end="url(#geom-arrow)"/>
+            <rect x="195" y="70" width="50" height="20" rx="10" fill="#f0f9ff" stroke="#bae6fd"/>
+            <text x="220" y="84" fill="#0369a1" font-size="11" font-weight="900" text-anchor="middle">l = ${sideText}</text>
+            <!-- Indicatore Angolo Retto -->
+            <path d="M 80 120 L 95 120 L 95 135" fill="none" stroke="#06b6d4" stroke-width="1.8"/>
+            <circle cx="87" cy="127" r="1.5" fill="#06b6d4"/>
+        </svg>`;
+    }
+
+    renderRectangleSVG(base, height, isQuiz = false, customBase = '', customHeight = '') {
+        const marker = this.getSvgMarkerDef();
+        const bText = customBase || `${base} cm`;
+        const hText = customHeight || `${height} cm`;
+        return `
+        <svg viewBox="0 0 280 180" xmlns="http://www.w3.org/2000/svg">
+            ${marker}
+            <!-- Rettangolo principale -->
+            <rect x="55" y="35" width="160" height="95" rx="4" fill="rgba(13,148,136,0.12)" stroke="#0d9488" stroke-width="3"/>
+            <!-- Linea Diagonale -->
+            <line x1="55" y1="130" x2="215" y2="35" stroke="#8b5cf6" stroke-width="2" stroke-dasharray="4,4"/>
+            <!-- Quota Base (Inferiore) -->
+            <line x1="55" y1="148" x2="215" y2="148" stroke="#0284c7" stroke-width="1.8" marker-start="url(#geom-arrow)" marker-end="url(#geom-arrow)"/>
+            <rect x="110" y="138" width="60" height="20" rx="10" fill="#f0fdfa" stroke="#99f6e4"/>
+            <text x="140" y="152" fill="#0f766e" font-size="11" font-weight="900" text-anchor="middle">b = ${bText}</text>
+            <!-- Quota Altezza (Destra) -->
+            <line x1="230" y1="35" x2="230" y2="130" stroke="#0284c7" stroke-width="1.8" marker-start="url(#geom-arrow)" marker-end="url(#geom-arrow)"/>
+            <rect x="218" y="72" width="55" height="20" rx="10" fill="#f0fdfa" stroke="#99f6e4"/>
+            <text x="245" y="86" fill="#0f766e" font-size="11" font-weight="900" text-anchor="middle">h = ${hText}</text>
+            <!-- Simbolo Angolo Retto -->
+            <path d="M 55 115 L 70 115 L 70 130" fill="none" stroke="#0d9488" stroke-width="1.8"/>
+            <circle cx="62" cy="122" r="1.5" fill="#0d9488"/>
+        </svg>`;
+    }
+
+    renderPythagorasSVG(c1, c2, hyp, isQuiz = false, highlightTarget = null) {
+        const marker = this.getSvgMarkerDef();
+        const hypVal = hyp || Math.hypot(c1, c2);
+        const c1Text = `${c1} cm`;
+        const c2Text = `${c2} cm`;
+        const hypText = highlightTarget === 'hyp' ? '? cm' : `${Number.isInteger(hypVal) ? hypVal : hypVal.toFixed(1)} cm`;
+        return `
+        <svg viewBox="0 0 280 180" xmlns="http://www.w3.org/2000/svg">
+            ${marker}
+            <!-- Triangolo Rettangolo -->
+            <polygon points="65,140 220,140 65,35" fill="rgba(168,85,247,0.12)" stroke="#a855f7" stroke-width="3"/>
+            <!-- Angolo Retto a (65, 140) -->
+            <path d="M 65 122 L 83 122 L 83 140" fill="none" stroke="#a855f7" stroke-width="2"/>
+            <circle cx="74" cy="131" r="2" fill="#a855f7"/>
+            <!-- Quota Cateto 1 (Base orizzontale) -->
+            <line x1="65" y1="156" x2="220" y2="156" stroke="#0284c7" stroke-width="1.8" marker-start="url(#geom-arrow)" marker-end="url(#geom-arrow)"/>
+            <rect x="115" y="146" width="60" height="20" rx="10" fill="#faf5ff" stroke="#e9d5ff"/>
+            <text x="145" y="160" fill="#6b21a8" font-size="11" font-weight="900" text-anchor="middle">c₁ = ${c1Text}</text>
+            <!-- Quota Cateto 2 (Altezza verticale) -->
+            <line x1="48" y1="35" x2="48" y2="140" stroke="#0284c7" stroke-width="1.8" marker-start="url(#geom-arrow)" marker-end="url(#geom-arrow)"/>
+            <rect x="18" y="78" width="60" height="20" rx="10" fill="#faf5ff" stroke="#e9d5ff"/>
+            <text x="48" y="92" fill="#6b21a8" font-size="11" font-weight="900" text-anchor="middle">c₂ = ${c2Text}</text>
+            <!-- Quota Ipotenusa i -->
+            <rect x="135" y="65" width="70" height="22" rx="11" fill="${highlightTarget === 'hyp' ? '#fef08a' : '#dcfce7'}" stroke="${highlightTarget === 'hyp' ? '#ca8a04' : '#22c55e'}" stroke-width="2"/>
+            <text x="170" y="80" fill="${highlightTarget === 'hyp' ? '#854d0e' : '#15803d'}" font-size="11" font-weight="900" text-anchor="middle">i = ${hypText}</text>
+        </svg>`;
+    }
+
+    renderTriangleSVG(base, height, isQuiz = false) {
+        const marker = this.getSvgMarkerDef();
+        return `
+        <svg viewBox="0 0 280 180" xmlns="http://www.w3.org/2000/svg">
+            ${marker}
+            <!-- Triangolo Isoscele -->
+            <polygon points="50,140 220,140 135,35" fill="rgba(245,158,11,0.12)" stroke="#f59e0b" stroke-width="3"/>
+            <!-- Altezza tratteggiata -->
+            <line x1="135" y1="35" x2="135" y2="140" stroke="#ef4444" stroke-width="2" stroke-dasharray="4,4"/>
+            <path d="M 135 125 L 148 125 L 148 140" fill="none" stroke="#ef4444" stroke-width="1.5"/>
+            <!-- Quota Altezza -->
+            <rect x="142" y="75" width="55" height="20" rx="10" fill="#fef2f2" stroke="#fecaca"/>
+            <text x="169" y="89" fill="#b91c1c" font-size="11" font-weight="900" text-anchor="middle">h = ${height} cm</text>
+            <!-- Quota Base -->
+            <line x1="50" y1="156" x2="220" y2="156" stroke="#0284c7" stroke-width="1.8" marker-start="url(#geom-arrow)" marker-end="url(#geom-arrow)"/>
+            <rect x="110" y="146" width="60" height="20" rx="10" fill="#fffbeb" stroke="#fde68a"/>
+            <text x="140" y="160" fill="#b45309" font-size="11" font-weight="900" text-anchor="middle">b = ${base} cm</text>
+        </svg>`;
+    }
+
+    renderRhombusSVG(D, d, isQuiz = false) {
+        const marker = this.getSvgMarkerDef();
+        return `
+        <svg viewBox="0 0 280 180" xmlns="http://www.w3.org/2000/svg">
+            ${marker}
+            <!-- Rombo -->
+            <polygon points="140,25 230,90 140,155 50,90" fill="rgba(59,130,246,0.12)" stroke="#3b82f6" stroke-width="3"/>
+            <!-- Diagonale Maggiore Orizzontale -->
+            <line x1="50" y1="90" x2="230" y2="90" stroke="#0284c7" stroke-width="2" stroke-dasharray="4,4"/>
+            <!-- Diagonale Minore Verticale -->
+            <line x1="140" y1="25" x2="140" y2="155" stroke="#ec4899" stroke-width="2" stroke-dasharray="4,4"/>
+            <!-- Etichette Diagonali -->
+            <rect x="175" y="72" width="55" height="20" rx="10" fill="#eff6ff" stroke="#bfdbfe"/>
+            <text x="202" y="86" fill="#1d4ed8" font-size="11" font-weight="900" text-anchor="middle">D = ${D} cm</text>
+            <rect x="112" y="32" width="55" height="20" rx="10" fill="#fdf2f8" stroke="#fbcfe8"/>
+            <text x="139" y="46" fill="#be185d" font-size="11" font-weight="900" text-anchor="middle">d = ${d} cm</text>
+            <!-- Angolo retto al centro -->
+            <path d="M 140 80 L 150 80 L 150 90" fill="none" stroke="#3b82f6" stroke-width="1.5"/>
+        </svg>`;
+    }
+
+    renderTrapezoidSVG(B, b, h, isQuiz = false) {
+        const marker = this.getSvgMarkerDef();
+        return `
+        <svg viewBox="0 0 280 180" xmlns="http://www.w3.org/2000/svg">
+            ${marker}
+            <!-- Trapezio Isoscele -->
+            <polygon points="90,40 180,40 225,140 45,140" fill="rgba(16,185,129,0.12)" stroke="#10b981" stroke-width="3"/>
+            <!-- Altezza verticale -->
+            <line x1="90" y1="40" x2="90" y2="140" stroke="#ef4444" stroke-width="2" stroke-dasharray="4,4"/>
+            <path d="M 90 126 L 102 126 L 102 140" fill="none" stroke="#ef4444" stroke-width="1.5"/>
+            <!-- Etichette Basi e Altezza -->
+            <rect x="110" y="24" width="50" height="20" rx="10" fill="#f0fdf4" stroke="#bbf7d0"/>
+            <text x="135" y="38" fill="#15803d" font-size="11" font-weight="900" text-anchor="middle">b = ${b} cm</text>
+            <rect x="110" y="146" width="55" height="20" rx="10" fill="#f0fdf4" stroke="#bbf7d0"/>
+            <text x="137" y="160" fill="#15803d" font-size="11" font-weight="900" text-anchor="middle">B = ${B} cm</text>
+            <rect x="96" y="80" width="50" height="20" rx="10" fill="#fef2f2" stroke="#fecaca"/>
+            <text x="121" y="94" fill="#b91c1c" font-size="11" font-weight="900" text-anchor="middle">h = ${h} cm</text>
+        </svg>`;
+    }
+
+    renderCircleSVG(radius, isQuiz = false) {
+        return `
+        <svg viewBox="0 0 280 180" xmlns="http://www.w3.org/2000/svg">
+            <!-- Cerchio -->
+            <circle cx="140" cy="90" r="60" fill="rgba(236,72,153,0.12)" stroke="#ec4899" stroke-width="3"/>
+            <!-- Centro e Raggio -->
+            <circle cx="140" cy="90" r="4.5" fill="#ec4899"/>
+            <line x1="140" y1="90" x2="200" y2="90" stroke="#0284c7" stroke-width="2.5"/>
+            <circle cx="200" cy="90" r="3" fill="#0284c7"/>
+            <!-- Tratteggio diametro restante -->
+            <line x1="80" y1="90" x2="140" y2="90" stroke="#ec4899" stroke-width="1.8" stroke-dasharray="3,3"/>
+            <!-- Etichetta Raggio -->
+            <rect x="145" y="65" width="55" height="20" rx="10" fill="#fdf2f8" stroke="#fbcfe8"/>
+            <text x="172" y="79" fill="#be185d" font-size="11" font-weight="900" text-anchor="middle">r = ${radius} cm</text>
+            <!-- Badge Costante Pi -->
+            <rect x="105" y="146" width="70" height="20" rx="10" fill="#f0f9ff" stroke="#bae6fd"/>
+            <text x="140" y="160" fill="#0369a1" font-size="11" font-weight="900" text-anchor="middle">π ≈ 3.14</text>
+        </svg>`;
+    }
+
+    renderCubeSVG(side, isQuiz = false) {
+        return `
+        <svg viewBox="0 0 280 180" xmlns="http://www.w3.org/2000/svg">
+            <!-- Faccia frontale -->
+            <polygon points="75,70 145,70 145,140 75,140" fill="rgba(6,182,212,0.25)" stroke="#0891b2" stroke-width="2.5"/>
+            <!-- Faccia superiore -->
+            <polygon points="75,70 115,35 185,35 145,70" fill="rgba(6,182,212,0.4)" stroke="#0891b2" stroke-width="2.5"/>
+            <!-- Faccia laterale destra -->
+            <polygon points="145,70 185,35 185,105 145,140" fill="rgba(6,182,212,0.15)" stroke="#0891b2" stroke-width="2.5"/>
+            <!-- Quota Spigolo -->
+            <rect x="85" y="146" width="55" height="20" rx="10" fill="#ecfeff" stroke="#a5f3fc"/>
+            <text x="112" y="160" fill="#0e7490" font-size="11" font-weight="900" text-anchor="middle">s = ${side} cm</text>
+            <rect x="188" y="65" width="55" height="20" rx="10" fill="#ecfeff" stroke="#a5f3fc"/>
+            <text x="215" y="79" fill="#0e7490" font-size="11" font-weight="900" text-anchor="middle">s = ${side} cm</text>
+        </svg>`;
+    }
+
+    renderCuboidSVG(a, b, c, isQuiz = false) {
+        return `
+        <svg viewBox="0 0 280 180" xmlns="http://www.w3.org/2000/svg">
+            <!-- Parallelepipedo -->
+            <polygon points="65,75 165,75 165,140 65,140" fill="rgba(14,165,233,0.22)" stroke="#0284c7" stroke-width="2.5"/>
+            <polygon points="65,75 105,40 205,40 165,75" fill="rgba(14,165,233,0.38)" stroke="#0284c7" stroke-width="2.5"/>
+            <polygon points="165,75 205,40 205,105 165,140" fill="rgba(14,165,233,0.14)" stroke="#0284c7" stroke-width="2.5"/>
+            <!-- Quote a, b, c -->
+            <rect x="90" y="146" width="55" height="20" rx="10" fill="#f0f9ff" stroke="#bae6fd"/>
+            <text x="117" y="160" fill="#0369a1" font-size="11" font-weight="900" text-anchor="middle">a = ${a} cm</text>
+            <rect x="135" y="32" width="55" height="20" rx="10" fill="#f0f9ff" stroke="#bae6fd"/>
+            <text x="162" y="46" fill="#0369a1" font-size="11" font-weight="900" text-anchor="middle">b = ${b} cm</text>
+            <rect x="208" y="70" width="55" height="20" rx="10" fill="#f0f9ff" stroke="#bae6fd"/>
+            <text x="235" y="84" fill="#0369a1" font-size="11" font-weight="900" text-anchor="middle">c = ${c} cm</text>
+        </svg>`;
+    }
+
+    // --- SETUP SIMULATORI PARAMETRICI LIVE ---
+    setupGeometrySimulators() {
+        // 1. Quadrato
+        const inputSqL = document.getElementById('sim-input-sq-l');
+        const btnCalcSq = document.getElementById('btn-calc-geom-sq');
+        const btnRndSq = document.getElementById('btn-rnd-geom-sq');
+        const resSq = document.getElementById('sim-result-geom-sq');
+        const svgBoxSq = document.getElementById('geom-svg-box-square');
+
+        this.runGeomSquare = () => {
+            if (!inputSqL) return;
+            const l = parseInt(inputSqL.value, 10);
+            if (isNaN(l) || l <= 0) return;
+            const p = 4 * l;
+            const a = l * l;
+            const d = (l * 1.4142).toFixed(2);
+            if (svgBoxSq) svgBoxSq.innerHTML = this.renderSquareSVG(l);
+            if (resSq) {
+                resSq.innerHTML = `
+                    <div class="sim-step-item"><span class="sim-step-tag">Perimetro</span> P = 4 × ${l} = <strong>${p} cm</strong></div>
+                    <div class="sim-step-item"><span class="sim-step-tag">Area</span> A = ${l}² = ${l} × ${l} = <strong>${a} cm²</strong></div>
+                    <div class="sim-step-item"><span class="sim-step-tag" style="background:#dcfce7;color:#15803d;">Diagonale</span> d = ${l}√2 ≈ <strong>${d} cm</strong> 📐</div>
+                `;
+            }
+        };
+        if (btnCalcSq) btnCalcSq.addEventListener('click', () => { window.soundEngine.playClick(); this.runGeomSquare(); });
+        if (btnRndSq) btnRndSq.addEventListener('click', () => {
+            window.soundEngine.playClick();
+            inputSqL.value = Math.floor(Math.random() * 18) + 3;
+            this.runGeomSquare();
+        });
+
+        // 2. Rettangolo
+        const inputRecB = document.getElementById('sim-input-rec-b');
+        const inputRecH = document.getElementById('sim-input-rec-h');
+        const btnCalcRec = document.getElementById('btn-calc-geom-rec');
+        const btnRndRec = document.getElementById('btn-rnd-geom-rec');
+        const resRec = document.getElementById('sim-result-geom-rec');
+        const svgBoxRec = document.getElementById('geom-svg-box-rect');
+
+        this.runGeomRectangle = () => {
+            if (!inputRecB || !inputRecH) return;
+            const b = parseInt(inputRecB.value, 10);
+            const h = parseInt(inputRecH.value, 10);
+            if (isNaN(b) || isNaN(h) || b <= 0 || h <= 0) return;
+            const p = 2 * (b + h);
+            const a = b * h;
+            const d = Math.hypot(b, h).toFixed(2);
+            if (svgBoxRec) svgBoxRec.innerHTML = this.renderRectangleSVG(b, h);
+            if (resRec) {
+                resRec.innerHTML = `
+                    <div class="sim-step-item"><span class="sim-step-tag">Perimetro</span> P = 2 × (${b} + ${h}) = <strong>${p} cm</strong></div>
+                    <div class="sim-step-item"><span class="sim-step-tag">Area</span> A = ${b} × ${h} = <strong>${a} cm²</strong></div>
+                    <div class="sim-step-item"><span class="sim-step-tag" style="background:#dcfce7;color:#15803d;">Diagonale</span> d = √(${b}² + ${h}²) = <strong>${d} cm</strong> 📏</div>
+                `;
+            }
+        };
+        if (btnCalcRec) btnCalcRec.addEventListener('click', () => { window.soundEngine.playClick(); this.runGeomRectangle(); });
+        if (btnRndRec) btnRndRec.addEventListener('click', () => {
+            window.soundEngine.playClick();
+            inputRecB.value = Math.floor(Math.random() * 20) + 4;
+            inputRecH.value = Math.floor(Math.random() * 15) + 3;
+            this.runGeomRectangle();
+        });
+
+        // 3. Triangolo Rettangolo & Pitagora
+        const inputPythC1 = document.getElementById('sim-input-pyth-c1');
+        const inputPythC2 = document.getElementById('sim-input-pyth-c2');
+        const btnCalcPyth = document.getElementById('btn-calc-geom-pyth');
+        const btnRndPyth = document.getElementById('btn-rnd-geom-pyth');
+        const resPyth = document.getElementById('sim-result-geom-pyth');
+        const svgBoxPyth = document.getElementById('geom-svg-box-pyth');
+
+        this.runGeomPythagoras = () => {
+            if (!inputPythC1 || !inputPythC2) return;
+            const c1 = parseInt(inputPythC1.value, 10);
+            const c2 = parseInt(inputPythC2.value, 10);
+            if (isNaN(c1) || isNaN(c2) || c1 <= 0 || c2 <= 0) return;
+            const sumSq = c1 * c1 + c2 * c2;
+            const hyp = Math.sqrt(sumSq);
+            const hypStr = Number.isInteger(hyp) ? hyp : hyp.toFixed(2);
+            const area = (c1 * c2) / 2;
+            const p = (c1 + c2 + hyp).toFixed(2);
+            if (svgBoxPyth) svgBoxPyth.innerHTML = this.renderPythagorasSVG(c1, c2, hyp);
+            if (resPyth) {
+                resPyth.innerHTML = `
+                    <div class="sim-step-item"><span class="sim-step-tag">Quadrati</span> c₁² = ${c1*c1} | c₂² = ${c2*c2} → Somma = ${sumSq}</div>
+                    <div class="sim-step-item"><span class="sim-step-tag" style="background:#dcfce7;color:#15803d;">Ipotenusa</span> i = √(${sumSq}) = <strong>${hypStr} cm</strong> ⚡</div>
+                    <div class="sim-step-item"><span class="sim-step-tag">Area</span> A = (${c1} × ${c2}) / 2 = <strong>${area} cm²</strong> (Perimetro: ${p} cm)</div>
+                `;
+            }
+        };
+        if (btnCalcPyth) btnCalcPyth.addEventListener('click', () => { window.soundEngine.playClick(); this.runGeomPythagoras(); });
+        if (btnRndPyth) btnRndPyth.addEventListener('click', () => {
+            window.soundEngine.playClick();
+            const triplets = [[3, 4], [5, 12], [6, 8], [8, 15], [9, 12], [12, 16], [10, 24], [15, 20]];
+            const t = triplets[Math.floor(Math.random() * triplets.length)];
+            inputPythC1.value = t[0];
+            inputPythC2.value = t[1];
+            this.runGeomPythagoras();
+        });
+
+        // 4. Triangolo Generico & Isoscele
+        const inputTriB = document.getElementById('sim-input-tri-b');
+        const inputTriH = document.getElementById('sim-input-tri-h');
+        const btnCalcTri = document.getElementById('btn-calc-geom-tri');
+        const btnRndTri = document.getElementById('btn-rnd-geom-tri');
+        const resTri = document.getElementById('sim-result-geom-tri');
+        const svgBoxTri = document.getElementById('geom-svg-box-triangle');
+
+        this.runGeomTriangle = () => {
+            if (!inputTriB || !inputTriH) return;
+            const b = parseInt(inputTriB.value, 10);
+            const h = parseInt(inputTriH.value, 10);
+            if (isNaN(b) || isNaN(h) || b <= 0 || h <= 0) return;
+            const area = (b * h) / 2;
+            const halfB = b / 2;
+            const sideIso = Math.hypot(halfB, h).toFixed(2);
+            const perim = (b + 2 * Math.hypot(halfB, h)).toFixed(2);
+            if (svgBoxTri) svgBoxTri.innerHTML = this.renderTriangleSVG(b, h);
+            if (resTri) {
+                resTri.innerHTML = `
+                    <div class="sim-step-item"><span class="sim-step-tag">Area</span> A = (${b} × ${h}) / 2 = <strong>${area} cm²</strong></div>
+                    <div class="sim-step-item"><span class="sim-step-tag" style="background:#dcfce7;color:#15803d;">Lato Isoscele</span> l = √(${halfB}² + ${h}²) = <strong>${sideIso} cm</strong></div>
+                    <div class="sim-step-item"><span class="sim-step-tag">Perimetro Isoscele</span> P = ${b} + (2 × ${sideIso}) = <strong>${perim} cm</strong> 🔺</div>
+                `;
+            }
+        };
+        if (btnCalcTri) btnCalcTri.addEventListener('click', () => { window.soundEngine.playClick(); this.runGeomTriangle(); });
+        if (btnRndTri) btnRndTri.addEventListener('click', () => {
+            window.soundEngine.playClick();
+            inputTriB.value = (Math.floor(Math.random() * 12) + 2) * 2;
+            inputTriH.value = Math.floor(Math.random() * 16) + 4;
+            this.runGeomTriangle();
+        });
+
+        // 5. Rombo & Trapezio
+        const selPoly = document.getElementById('sim-select-geom-poly');
+        const lblPolyV1 = document.getElementById('lbl-poly-v1');
+        const lblPolyV2 = document.getElementById('lbl-poly-v2');
+        const inputPolyV1 = document.getElementById('sim-input-poly-v1');
+        const inputPolyV2 = document.getElementById('sim-input-poly-v2');
+        const inputPolyV3 = document.getElementById('sim-input-poly-v3');
+        const v3Wrapper = document.getElementById('sim-poly-v3-wrapper');
+        const btnCalcPoly = document.getElementById('btn-calc-geom-poly');
+        const btnRndPoly = document.getElementById('btn-rnd-geom-poly');
+        const resPoly = document.getElementById('sim-result-geom-poly');
+        const svgBoxPoly = document.getElementById('geom-svg-box-rhombus');
+
+        const updatePolyControls = () => {
+            const isTrap = selPoly && selPoly.value === 'trapezoid';
+            if (v3Wrapper) v3Wrapper.style.display = isTrap ? 'inline-flex' : 'none';
+            if (lblPolyV1) lblPolyV1.textContent = isTrap ? 'B (cm):' : 'D (cm):';
+            if (lblPolyV2) lblPolyV2.textContent = isTrap ? 'b (cm):' : 'd (cm):';
+        };
+        if (selPoly) {
+            selPoly.addEventListener('change', () => {
+                updatePolyControls();
+                this.runGeomPoly();
+            });
+        }
+
+        this.runGeomPoly = () => {
+            if (!inputPolyV1 || !inputPolyV2) return;
+            const isTrap = selPoly && selPoly.value === 'trapezoid';
+            if (isTrap) {
+                const B = parseInt(inputPolyV1.value, 10);
+                const b = parseInt(inputPolyV2.value, 10);
+                const h = parseInt(inputPolyV3.value, 10);
+                if (isNaN(B) || isNaN(b) || isNaN(h) || B <= 0 || b <= 0 || h <= 0) return;
+                const area = ((B + b) * h) / 2;
+                if (svgBoxPoly) svgBoxPoly.innerHTML = this.renderTrapezoidSVG(B, b, h);
+                if (resPoly) {
+                    resPoly.innerHTML = `
+                        <div class="sim-step-item"><span class="sim-step-tag">Somma Basi</span> B + b = ${B} + ${b} = <strong>${B + b} cm</strong></div>
+                        <div class="sim-step-item"><span class="sim-step-tag" style="background:#dcfce7;color:#15803d;">Area Trapezio</span> A = (${B + b} × ${h}) / 2 = <strong>${area} cm²</strong> 🔷</div>
+                    `;
+                }
+            } else {
+                const D = parseInt(inputPolyV1.value, 10);
+                const d = parseInt(inputPolyV2.value, 10);
+                if (isNaN(D) || isNaN(d) || D <= 0 || d <= 0) return;
+                const area = (D * d) / 2;
+                const side = Math.hypot(D / 2, d / 2).toFixed(2);
+                const p = (4 * Math.hypot(D / 2, d / 2)).toFixed(2);
+                if (svgBoxPoly) svgBoxPoly.innerHTML = this.renderRhombusSVG(D, d);
+                if (resPoly) {
+                    resPoly.innerHTML = `
+                        <div class="sim-step-item"><span class="sim-step-tag" style="background:#dcfce7;color:#15803d;">Area Rombo</span> A = (${D} × ${d}) / 2 = <strong>${area} cm²</strong></div>
+                        <div class="sim-step-item"><span class="sim-step-tag">Lato Rombo</span> l = √(${D/2}² + ${d/2}²) = <strong>${side} cm</strong> (Perimetro: ${p} cm) 💠</div>
+                    `;
+                }
+            }
+        };
+        if (btnCalcPoly) btnCalcPoly.addEventListener('click', () => { window.soundEngine.playClick(); this.runGeomPoly(); });
+        if (btnRndPoly) btnRndPoly.addEventListener('click', () => {
+            window.soundEngine.playClick();
+            const isTrap = selPoly && selPoly.value === 'trapezoid';
+            if (isTrap) {
+                inputPolyV1.value = Math.floor(Math.random() * 12) + 10;
+                inputPolyV2.value = Math.floor(Math.random() * 6) + 4;
+                if (inputPolyV3) inputPolyV3.value = Math.floor(Math.random() * 8) + 3;
+            } else {
+                inputPolyV1.value = (Math.floor(Math.random() * 8) + 4) * 2;
+                inputPolyV2.value = (Math.floor(Math.random() * 6) + 2) * 2;
+            }
+            this.runGeomPoly();
+        });
+
+        // 6. Cerchio & Circonferenza
+        const inputCircR = document.getElementById('sim-input-circle-r');
+        const btnCalcCirc = document.getElementById('btn-calc-geom-circle');
+        const btnRndCirc = document.getElementById('btn-rnd-geom-circle');
+        const resCirc = document.getElementById('sim-result-geom-circle');
+        const svgBoxCirc = document.getElementById('geom-svg-box-circle');
+
+        this.runGeomCircle = () => {
+            if (!inputCircR) return;
+            const r = parseFloat(inputCircR.value);
+            if (isNaN(r) || r <= 0) return;
+            const d = 2 * r;
+            const c = (2 * 3.14 * r).toFixed(2);
+            const a = (3.14 * r * r).toFixed(2);
+            if (svgBoxCirc) svgBoxCirc.innerHTML = this.renderCircleSVG(r);
+            if (resCirc) {
+                resCirc.innerHTML = `
+                    <div class="sim-step-item"><span class="sim-step-tag">Diametro</span> d = 2 × ${r} = <strong>${d} cm</strong></div>
+                    <div class="sim-step-item"><span class="sim-step-tag">Circonferenza</span> C = 2 × 3.14 × ${r} = <strong>${c} cm</strong></div>
+                    <div class="sim-step-item"><span class="sim-step-tag" style="background:#dcfce7;color:#15803d;">Area Cerchio</span> A = 3.14 × ${r}² = <strong>${a} cm²</strong> ⭕</div>
+                `;
+            }
+        };
+        if (btnCalcCirc) btnCalcCirc.addEventListener('click', () => { window.soundEngine.playClick(); this.runGeomCircle(); });
+        if (btnRndCirc) btnRndCirc.addEventListener('click', () => {
+            window.soundEngine.playClick();
+            inputCircR.value = Math.floor(Math.random() * 14) + 2;
+            this.runGeomCircle();
+        });
+
+        // 7. Solidi 3D: Cubo & Parallelepipedo
+        const selSolid = document.getElementById('sim-select-geom-solid');
+        const lblSolidS = document.getElementById('lbl-solid-s');
+        const inputSolidS = document.getElementById('sim-input-solid-s');
+        const inputSolidB = document.getElementById('sim-input-solid-b');
+        const inputSolidC = document.getElementById('sim-input-solid-c');
+        const solidExtraWrapper = document.getElementById('sim-solid-extra-wrapper');
+        const btnCalcSolid = document.getElementById('btn-calc-geom-solid');
+        const btnRndSolid = document.getElementById('btn-rnd-geom-solid');
+        const resSolid = document.getElementById('sim-result-geom-solid');
+        const svgBoxSolid = document.getElementById('geom-svg-box-solids');
+
+        const updateSolidControls = () => {
+            const isCuboid = selSolid && selSolid.value === 'cuboid';
+            if (solidExtraWrapper) solidExtraWrapper.style.display = isCuboid ? 'inline-flex' : 'none';
+            if (lblSolidS) lblSolidS.textContent = isCuboid ? 'a (cm):' : 's (cm):';
+        };
+        if (selSolid) {
+            selSolid.addEventListener('change', () => {
+                updateSolidControls();
+                this.runGeomSolid();
+            });
+        }
+
+        this.runGeomSolid = () => {
+            if (!inputSolidS) return;
+            const isCuboid = selSolid && selSolid.value === 'cuboid';
+            if (isCuboid) {
+                const a = parseInt(inputSolidS.value, 10);
+                const b = inputSolidB ? parseInt(inputSolidB.value, 10) : 5;
+                const c = inputSolidC ? parseInt(inputSolidC.value, 10) : 6;
+                if (isNaN(a) || isNaN(b) || isNaN(c) || a <= 0 || b <= 0 || c <= 0) return;
+                const v = a * b * c;
+                const sTot = 2 * (a * b + b * c + a * c);
+                if (svgBoxSolid) svgBoxSolid.innerHTML = this.renderCuboidSVG(a, b, c);
+                if (resSolid) {
+                    resSolid.innerHTML = `
+                        <div class="sim-step-item"><span class="sim-step-tag" style="background:#dcfce7;color:#15803d;">Volume</span> V = ${a} × ${b} × ${c} = <strong>${v} cm³</strong></div>
+                        <div class="sim-step-item"><span class="sim-step-tag">Superficie Totale</span> S_tot = 2 × (${a*b} + ${b*c} + ${a*c}) = <strong>${sTot} cm²</strong> 📦</div>
+                    `;
+                }
+            } else {
+                const s = parseInt(inputSolidS.value, 10);
+                if (isNaN(s) || s <= 0) return;
+                const v = s * s * s;
+                const sTot = 6 * (s * s);
+                const d = (s * 1.732).toFixed(2);
+                if (svgBoxSolid) svgBoxSolid.innerHTML = this.renderCubeSVG(s);
+                if (resSolid) {
+                    resSolid.innerHTML = `
+                        <div class="sim-step-item"><span class="sim-step-tag" style="background:#dcfce7;color:#15803d;">Volume Cubo</span> V = ${s}³ = ${s} × ${s} × ${s} = <strong>${v} cm³</strong></div>
+                        <div class="sim-step-item"><span class="sim-step-tag">Superficie Totale (6 facce)</span> S_tot = 6 × ${s*s} = <strong>${sTot} cm²</strong> (Diagonale: ${d} cm) 🧊</div>
+                    `;
+                }
+            }
+        };
+        if (btnCalcSolid) btnCalcSolid.addEventListener('click', () => { window.soundEngine.playClick(); this.runGeomSolid(); });
+        if (btnRndSolid) btnRndSolid.addEventListener('click', () => {
+            window.soundEngine.playClick();
+            const isCuboid = selSolid && selSolid.value === 'cuboid';
+            if (isCuboid) {
+                inputSolidS.value = Math.floor(Math.random() * 6) + 3;
+                if (inputSolidB) inputSolidB.value = Math.floor(Math.random() * 6) + 3;
+                if (inputSolidC) inputSolidC.value = Math.floor(Math.random() * 8) + 4;
+            } else {
+                inputSolidS.value = Math.floor(Math.random() * 8) + 2;
+            }
+            this.runGeomSolid();
+        });
+    }
+
+    runAllGeometrySimulatorsDefault() {
+        if (this.runGeomSquare) this.runGeomSquare();
+        if (this.runGeomRectangle) this.runGeomRectangle();
+        if (this.runGeomPythagoras) this.runGeomPythagoras();
+        if (this.runGeomTriangle) this.runGeomTriangle();
+        if (this.runGeomPoly) this.runGeomPoly();
+        if (this.runGeomCircle) this.runGeomCircle();
+        if (this.runGeomSolid) this.runGeomSolid();
+    }
+
+    // --- GENERATORE PROBLEMI GEOMETRICI DI LIVELLO AAA ---
+    generateGeometryQuestion(shapeType, index) {
+        const pool = ['square', 'rectangle', 'pythagoras', 'triangle', 'rhombus_trapezoid', 'circle', 'solids'];
+        const actualShape = (shapeType === 'all' || shapeType === 'mixed') ? pool[index % pool.length] : shapeType;
+
+        if (actualShape === 'square') {
+            const side = Math.floor(Math.random() * 12) + 3; // 3 to 14
+            const isArea = Math.random() > 0.45;
+            if (isArea) {
+                const ans = `${side * side} cm²`;
+                const dist1 = `${4 * side} cm²`;
+                const dist2 = `${(side + 1) * (side + 1)} cm²`;
+                const dist3 = `${side * side + 10} cm²`;
+                return {
+                    topic: '📐 QUADRATO: CALCOLO DELL\'AREA',
+                    question: `Dato un Quadrato avente lato l = ${side} cm, calcola la sua Area:`,
+                    correctAnswer: ans,
+                    options: this.shuffleArray([ans, dist1, dist2, dist3]),
+                    svgHtml: this.renderSquareSVG(side, true),
+                    explanation: `Formula dell'Area: A = l² = ${side} × ${side} = ${side * side} cm². (Il perimetro è 4 × ${side} = ${4 * side} cm).`
+                };
+            } else {
+                const ans = `${4 * side} cm`;
+                const dist1 = `${side * side} cm`;
+                const dist2 = `${2 * side} cm`;
+                const dist3 = `${4 * side + 4} cm`;
+                return {
+                    topic: '📐 QUADRATO: CALCOLO DEL PERIMETRO',
+                    question: `Dato un Quadrato avente lato l = ${side} cm, calcola il suo Perimetro:`,
+                    correctAnswer: ans,
+                    options: this.shuffleArray([ans, dist1, dist2, dist3]),
+                    svgHtml: this.renderSquareSVG(side, true),
+                    explanation: `Formula del Perimetro: P = 4 × l = 4 × ${side} = ${4 * side} cm. (La somma dei 4 lati congruenti).`
+                };
+            }
+        } else if (actualShape === 'rectangle') {
+            const b = Math.floor(Math.random() * 12) + 5;
+            const h = Math.floor(Math.random() * 8) + 3;
+            const isArea = Math.random() > 0.4;
+            if (isArea) {
+                const ans = `${b * h} cm²`;
+                const dist1 = `${2 * (b + h)} cm²`;
+                const dist2 = `${b * h + 12} cm²`;
+                const dist3 = `${(b - 1) * h} cm²`;
+                return {
+                    topic: '📏 RETTANGOLO: CALCOLO DELL\'AREA',
+                    question: `Calcola l'Area di un Rettangolo avente base b = ${b} cm e altezza h = ${h} cm:`,
+                    correctAnswer: ans,
+                    options: this.shuffleArray([ans, dist1, dist2, dist3]),
+                    svgHtml: this.renderRectangleSVG(b, h, true),
+                    explanation: `Formula dell'Area del Rettangolo: A = b × h = ${b} × ${h} = ${b * h} cm².`
+                };
+            } else {
+                const ans = `${2 * (b + h)} cm`;
+                const dist1 = `${b * h} cm`;
+                const dist2 = `${b + h} cm`;
+                const dist3 = `${2 * (b + h) + 4} cm`;
+                return {
+                    topic: '📏 RETTANGOLO: CALCOLO DEL PERIMETRO',
+                    question: `Calcola il Perimetro di un Rettangolo con base b = ${b} cm e altezza h = ${h} cm:`,
+                    correctAnswer: ans,
+                    options: this.shuffleArray([ans, dist1, dist2, dist3]),
+                    svgHtml: this.renderRectangleSVG(b, h, true),
+                    explanation: `Formula del Perimetro: P = 2 × (b + h) = 2 × (${b} + ${h}) = 2 × ${b + h} = ${2 * (b + h)} cm.`
+                };
+            }
+        } else if (actualShape === 'pythagoras') {
+            const triplets = [
+                [3, 4, 5],
+                [5, 12, 13],
+                [6, 8, 10],
+                [8, 15, 17],
+                [9, 12, 15],
+                [12, 16, 20],
+                [10, 24, 26]
+            ];
+            const t = triplets[Math.floor(Math.random() * triplets.length)];
+            const [c1, c2, hyp] = t;
+            const findHyp = Math.random() > 0.35;
+
+            if (findHyp) {
+                const ans = `${hyp} cm`;
+                const dist1 = `${c1 + c2} cm`;
+                const dist2 = `${hyp + 2} cm`;
+                const dist3 = `${hyp - 1} cm`;
+                return {
+                    topic: '💎 TEOREMA DI PITAGORA: IPOTENUSA',
+                    question: `In un triangolo rettangolo con cateti c₁ = ${c1} cm e c₂ = ${c2} cm, quanto misura l'ipotenusa i?`,
+                    correctAnswer: ans,
+                    options: this.shuffleArray([ans, dist1, dist2, dist3]),
+                    svgHtml: this.renderPythagorasSVG(c1, c2, hyp, true, 'hyp'),
+                    explanation: `Teorema di Pitagora: i = √(c₁² + c₂²) = √(${c1}² + ${c2}²) = √(${c1*c1} + ${c2*c2}) = √(${hyp*hyp}) = ${hyp} cm.`
+                };
+            } else {
+                const ans = `${c1} cm`;
+                const dist1 = `${hyp - c2} cm`;
+                const dist2 = `${c1 + 3} cm`;
+                const dist3 = `${c1 - 2} cm`;
+                return {
+                    topic: '💎 TEOREMA DI PITAGORA: CATETO INVERSO',
+                    question: `Dato un triangolo rettangolo con ipotenusa i = ${hyp} cm e cateto c₂ = ${c2} cm, trova il cateto c₁:`,
+                    correctAnswer: ans,
+                    options: this.shuffleArray([ans, dist1, dist2, dist3]),
+                    svgHtml: this.renderPythagorasSVG(c1, c2, hyp, true),
+                    explanation: `Formula inversa di Pitagora: c₁ = √(i² - c₂²) = √(${hyp}² - ${c2}²) = √(${hyp*hyp} - ${c2*c2}) = √(${c1*c1}) = ${c1} cm.`
+                };
+            }
+        } else if (actualShape === 'triangle') {
+            const b = (Math.floor(Math.random() * 8) + 3) * 2;
+            const h = Math.floor(Math.random() * 10) + 4;
+            const area = (b * h) / 2;
+            const ans = `${area} cm²`;
+            const dist1 = `${b * h} cm²`;
+            const dist2 = `${area + 6} cm²`;
+            const dist3 = `${area - 4} cm²`;
+            return {
+                topic: '🔺 TRIANGOLO: CALCOLO DELL\'AREA',
+                question: `Calcola l'Area di un Triangolo avente base b = ${b} cm e altezza h = ${h} cm:`,
+                correctAnswer: ans,
+                options: this.shuffleArray([ans, dist1, dist2, dist3]),
+                svgHtml: this.renderTriangleSVG(b, h, true),
+                explanation: `Formula dell'Area del Triangolo: A = (b × h) / 2 = (${b} × ${h}) / 2 = ${b * h} / 2 = ${area} cm².`
+            };
+        } else if (actualShape === 'rhombus_trapezoid') {
+            const isRhombus = Math.random() > 0.5;
+            if (isRhombus) {
+                const D = (Math.floor(Math.random() * 6) + 4) * 2;
+                const d = (Math.floor(Math.random() * 4) + 2) * 2;
+                const area = (D * d) / 2;
+                const ans = `${area} cm²`;
+                const dist1 = `${D * d} cm²`;
+                const dist2 = `${area + 8} cm²`;
+                const dist3 = `${area - 6} cm²`;
+                return {
+                    topic: '🔷 ROMBO: CALCOLO DELL\'AREA',
+                    question: `Calcola l'Area di un Rombo con diagonale maggiore D = ${D} cm e diagonale minore d = ${d} cm:`,
+                    correctAnswer: ans,
+                    options: this.shuffleArray([ans, dist1, dist2, dist3]),
+                    svgHtml: this.renderRhombusSVG(D, d, true),
+                    explanation: `Formula dell'Area del Rombo: A = (D × d) / 2 = (${D} × ${d}) / 2 = ${D * d} / 2 = ${area} cm².`
+                };
+            } else {
+                const B = Math.floor(Math.random() * 8) + 10;
+                const b = Math.floor(Math.random() * 4) + 4;
+                const h = (Math.floor(Math.random() * 4) + 2) * 2;
+                const area = ((B + b) * h) / 2;
+                const ans = `${area} cm²`;
+                const dist1 = `${(B + b) * h} cm²`;
+                const dist2 = `${area + 10} cm²`;
+                const dist3 = `${B * h} cm²`;
+                return {
+                    topic: '🔷 TRAPEZIO: CALCOLO DELL\'AREA',
+                    question: `Calcola l'Area di un Trapezio con base maggiore B = ${B} cm, base minore b = ${b} cm e altezza h = ${h} cm:`,
+                    correctAnswer: ans,
+                    options: this.shuffleArray([ans, dist1, dist2, dist3]),
+                    svgHtml: this.renderTrapezoidSVG(B, b, h, true),
+                    explanation: `Formula dell'Area del Trapezio: A = ((B + b) × h) / 2 = ((${B} + ${b}) × ${h}) / 2 = (${B + b} × ${h}) / 2 = ${area} cm².`
+                };
+            }
+        } else if (actualShape === 'circle') {
+            const r = Math.floor(Math.random() * 7) + 2;
+            const isCircumference = Math.random() > 0.5;
+            if (isCircumference) {
+                const c = (2 * 3.14 * r).toFixed(2);
+                const ans = `${c} cm`;
+                const dist1 = `${(3.14 * r * r).toFixed(2)} cm`;
+                const dist2 = `${(2 * r)} cm`;
+                const dist3 = `${(3.14 * r).toFixed(2)} cm`;
+                return {
+                    topic: '⭕ CIRCONFERENZA & CERCHIO (π ≈ 3.14)',
+                    question: `Dato un Cerchio di raggio r = ${r} cm, calcola la Circonferenza C (usa π ≈ 3.14):`,
+                    correctAnswer: ans,
+                    options: this.shuffleArray([ans, dist1, dist2, dist3]),
+                    svgHtml: this.renderCircleSVG(r, true),
+                    explanation: `Formula Circonferenza: C = 2 × π × r = 2 × 3.14 × ${r} = ${c} cm.`
+                };
+            } else {
+                const a = (3.14 * r * r).toFixed(2);
+                const ans = `${a} cm²`;
+                const dist1 = `${(2 * 3.14 * r).toFixed(2)} cm²`;
+                const dist2 = `${r * r} cm²`;
+                const dist3 = `${(3.14 * r).toFixed(2)} cm²`;
+                return {
+                    topic: '⭕ AREA DEL CERCHIO (π ≈ 3.14)',
+                    question: `Dato un Cerchio con raggio r = ${r} cm, calcola la sua Area A (usa π ≈ 3.14):`,
+                    correctAnswer: ans,
+                    options: this.shuffleArray([ans, dist1, dist2, dist3]),
+                    svgHtml: this.renderCircleSVG(r, true),
+                    explanation: `Formula Area del Cerchio: A = π × r² = 3.14 × ${r}² = 3.14 × ${r * r} = ${a} cm².`
+                };
+            }
+        } else {
+            // Solidi 3D
+            const isCube = Math.random() > 0.45;
+            if (isCube) {
+                const s = Math.floor(Math.random() * 5) + 2;
+                const v = s * s * s;
+                const ans = `${v} cm³`;
+                const dist1 = `${6 * s * s} cm³`;
+                const dist2 = `${s * s} cm³`;
+                const dist3 = `${v + 12} cm³`;
+                return {
+                    topic: '🧊 SOLIDI 3D: VOLUME DEL CUBO',
+                    question: `Calcola il Volume V di un Cubo avente spigolo s = ${s} cm:`,
+                    correctAnswer: ans,
+                    options: this.shuffleArray([ans, dist1, dist2, dist3]),
+                    svgHtml: this.renderCubeSVG(s, true),
+                    explanation: `Formula del Volume del Cubo: V = s³ = ${s} × ${s} × ${s} = ${v} cm³. (La superficie totale è 6 × ${s*s} = ${6*s*s} cm²).`
+                };
+            } else {
+                const a = Math.floor(Math.random() * 4) + 2;
+                const b = Math.floor(Math.random() * 4) + 3;
+                const c = Math.floor(Math.random() * 4) + 4;
+                const v = a * b * c;
+                const ans = `${v} cm³`;
+                const dist1 = `${2 * (a * b + b * c + a * c)} cm³`;
+                const dist2 = `${a + b + c} cm³`;
+                const dist3 = `${v + 10} cm³`;
+                return {
+                    topic: '📦 SOLIDI 3D: VOLUME DEL PARALLELEPIPEDO',
+                    question: `Calcola il Volume V di un Parallelepipedo con dimensioni a = ${a} cm, b = ${b} cm e c = ${c} cm:`,
+                    correctAnswer: ans,
+                    options: this.shuffleArray([ans, dist1, dist2, dist3]),
+                    svgHtml: this.renderCuboidSVG(a, b, c, true),
+                    explanation: `Formula del Volume del Parallelepipedo: V = a × b × c = ${a} × ${b} × ${c} = ${v} cm³.`
+                };
+            }
+        }
+    }
+
+    shuffleArray(arr) {
+        const copy = [...arr];
+        for (let i = copy.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [copy[i], copy[j]] = [copy[j], copy[i]];
+        }
+        return copy;
+    }
+
+    startGeometryWorkout(shapeType) {
+        this.geometry.currentShape = shapeType || 'mixed';
+        this.geometry.workoutQuestions = [];
+        this.geometry.currentQuestionIdx = 0;
+        this.geometry.score = 0;
+        this.geometry.combo = 0;
+        this.geometry.maxCombo = 0;
+        this.geometry.mistakes = [];
+        this.geometry.correctCount = 0;
+        this.geometry.wrongCount = 0;
+
+        for (let i = 0; i < 10; i++) {
+            this.geometry.workoutQuestions.push(this.generateGeometryQuestion(shapeType, i));
+        }
+
+        this.showGeometrySubView('workout');
+        this.loadGeometryQuestion();
+    }
+
+    loadGeometryQuestion() {
+        clearTimeout(this.geometry.advanceTimer);
+        const idx = this.geometry.currentQuestionIdx;
+        const total = this.geometry.workoutQuestions.length;
+
+        if (idx >= total) {
+            this.finishGeometryWorkout();
+            return;
+        }
+
+        const q = this.geometry.workoutQuestions[idx];
+        this.geometry.currentQuestion = q;
+        this.geometry.answered = false;
+
+        // Aggiorna HUD
+        const elProgress = document.getElementById('geom-hud-progress');
+        if (elProgress) elProgress.textContent = `Domanda ${idx + 1} / ${total}`;
+
+        const elScore = document.getElementById('geom-hud-score');
+        if (elScore) elScore.textContent = `${this.geometry.score} pt`;
+
+        const elCombo = document.getElementById('geom-hud-combo');
+        if (elCombo) {
+            if (this.geometry.combo >= 2) {
+                elCombo.style.display = 'inline-block';
+                elCombo.textContent = `🔥 COMBO x${this.geometry.combo}!`;
+            } else {
+                elCombo.style.display = 'none';
+            }
+        }
+
+        // Testi e SVG
+        const elTopic = document.getElementById('geom-problem-topic');
+        if (elTopic) elTopic.textContent = q.topic;
+
+        const elText = document.getElementById('geom-problem-text');
+        if (elText) elText.textContent = q.question;
+
+        const elSvgBox = document.getElementById('geom-problem-svg-container');
+        if (elSvgBox) elSvgBox.innerHTML = q.svgHtml;
+
+        // Feedback e pulsante avanti
+        const fbBox = document.getElementById('geom-feedback-box');
+        if (fbBox) {
+            fbBox.style.display = 'none';
+            fbBox.className = 'geom-feedback-box';
+            fbBox.innerHTML = '';
+        }
+        const btnNext = document.getElementById('btn-geom-next');
+        if (btnNext) btnNext.style.display = 'none';
+
+        // Opzioni di risposta
+        const grid = document.getElementById('geom-options-grid');
+        if (grid) {
+            grid.innerHTML = '';
+            q.options.forEach((optText, optIdx) => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'geom-option-btn';
+                btn.id = `geom-opt-${optIdx}`;
+                btn.textContent = optText;
+                btn.addEventListener('click', () => {
+                    this.handleGeometryAnswer(optText, btn);
+                });
+                grid.appendChild(btn);
+            });
+        }
+    }
+
+    handleGeometryAnswer(chosenText, chosenBtn) {
+        if (this.geometry.answered) return;
+        this.geometry.answered = true;
+
+        const q = this.geometry.currentQuestion;
+        const isCorrect = (chosenText === q.correctAnswer);
+
+        // Disabilita tutti i pulsanti
+        document.querySelectorAll('.geom-option-btn').forEach(btn => {
+            btn.disabled = true;
+            if (btn.textContent === q.correctAnswer) {
+                btn.classList.add('correct');
+            }
+        });
+
+        const fbBox = document.getElementById('geom-feedback-box');
+        const btnNext = document.getElementById('btn-geom-next');
+
+        if (isCorrect) {
+            this.geometry.correctCount++;
+            this.geometry.combo++;
+            if (this.geometry.combo > this.geometry.maxCombo) {
+                this.geometry.maxCombo = this.geometry.combo;
+            }
+            const pts = 100 + (this.geometry.combo * 25);
+            this.geometry.score += pts;
+            this.addXP(25 + this.geometry.combo * 5, 'Geometria');
+
+            if (window.soundEngine && window.soundEngine.playCorrect) {
+                window.soundEngine.playCorrect();
+            }
+
+            if (fbBox) {
+                fbBox.className = 'geom-feedback-box correct';
+                fbBox.innerHTML = `🎉 <strong>ESATTO! (+${pts} pt)</strong><br>${q.explanation}`;
+                fbBox.style.display = 'block';
+            }
+        } else {
+            this.geometry.wrongCount++;
+            this.geometry.combo = 0;
+            chosenBtn.classList.add('wrong');
+
+            if (window.soundEngine && window.soundEngine.playWrong) {
+                window.soundEngine.playWrong();
+            }
+
+            this.geometry.mistakes.push({
+                question: q.question,
+                given: chosenText,
+                correct: q.correctAnswer,
+                explanation: q.explanation
+            });
+
+            if (fbBox) {
+                fbBox.className = 'geom-feedback-box wrong';
+                fbBox.innerHTML = `❌ <strong>RISPOSTA ERRATA</strong> (Risposta corretta: <em>${q.correctAnswer}</em>)<br>${q.explanation}`;
+                fbBox.style.display = 'block';
+            }
+        }
+
+        // Mostra tasto avanti
+        if (btnNext) btnNext.style.display = 'inline-block';
+
+        // Auto-avanzamento dopo breve pausa (2.2s)
+        this.geometry.advanceTimer = setTimeout(() => {
+            this.advanceGeometryWorkout();
+        }, 2200);
+    }
+
+    advanceGeometryWorkout() {
+        this.geometry.currentQuestionIdx++;
+        this.loadGeometryQuestion();
+    }
+
+    openGeometryHintModal() {
+        const q = this.geometry.currentQuestion;
+        if (!q) return;
+
+        const badge = document.getElementById('help-modal-badge');
+        const title = document.getElementById('help-modal-title');
+        const desc = document.getElementById('help-modal-desc');
+        const grid = document.getElementById('help-modal-grid');
+        const trickView = document.getElementById('help-modal-trick-view');
+        const geomView = document.getElementById('help-modal-geom-view');
+
+        if (badge) badge.textContent = '📐 GUIDA FORMULA GEOMETRICA';
+        if (title) title.textContent = q.topic;
+        if (desc) desc.textContent = q.question;
+
+        if (grid) grid.style.display = 'none';
+        if (trickView) trickView.style.display = 'none';
+
+        if (geomView) {
+            geomView.style.display = 'block';
+            geomView.innerHTML = `
+                <div class="geom-help-svg-box">${q.svgHtml}</div>
+                <div class="geom-help-steps">
+                    <div class="step-line">💡 <strong>Passaggi Didattici:</strong></div>
+                    <div class="step-line">${q.explanation}</div>
+                </div>
+            `;
+        }
+
+        if (this.modalVisualHelp) this.modalVisualHelp.classList.add('active');
+    }
+
+    finishGeometryWorkout() {
+        this.showGeometrySubView('results');
+
+        const total = this.geometry.workoutQuestions.length;
+        const correct = this.geometry.correctCount;
+        const pct = Math.round((correct / total) * 100);
+
+        let stars = 1;
+        if (pct >= 90) stars = 3;
+        else if (pct >= 70) stars = 2;
+
+        // Render stelle
+        for (let i = 1; i <= 3; i++) {
+            const sEl = document.getElementById(`geom-res-star-${i}`);
+            if (sEl) {
+                if (i <= stars) {
+                    sEl.classList.add('earned');
+                    sEl.textContent = '★';
+                } else {
+                    sEl.classList.remove('earned');
+                    sEl.textContent = '☆';
+                }
+            }
+        }
+
+        const elTitle = document.getElementById('geom-res-title');
+        const elSub = document.getElementById('geom-res-subtitle');
+        if (stars === 3) {
+            if (elTitle) elTitle.textContent = '🏆 Ingegnere Supremo della Geometria!';
+            if (elSub) elSub.textContent = 'Precisione assoluta e padronanza impeccabile delle formule!';
+            if (window.soundEngine && window.soundEngine.playVictory) window.soundEngine.playVictory();
+            if (window.confetti && window.confetti.rain) window.confetti.rain(2200);
+        } else if (stars === 2) {
+            if (elTitle) elTitle.textContent = '📐 Ottimo Risultato Geometrico!';
+            if (elSub) elSub.textContent = 'Hai dimostrato una solida comprensione delle figure!';
+            if (window.soundEngine && window.soundEngine.playVictory) window.soundEngine.playVictory();
+        } else {
+            if (elTitle) elTitle.textContent = '📐 Continua ad Allenarti!';
+            if (elSub) elSub.textContent = 'Rivedi le formule nel Laboratorio per migliorare la precisione!';
+        }
+
+        const elScore = document.getElementById('geom-res-score');
+        if (elScore) elScore.textContent = this.geometry.score;
+
+        const elAcc = document.getElementById('geom-res-accuracy');
+        if (elAcc) elAcc.textContent = `${pct}%`;
+
+        const elCombo = document.getElementById('geom-res-combo');
+        if (elCombo) elCombo.textContent = `x${this.geometry.maxCombo}`;
+
+        // Errori
+        const mistakesBox = document.getElementById('geom-mistakes-box');
+        const mistakesList = document.getElementById('geom-mistakes-list');
+        if (this.geometry.mistakes.length > 0) {
+            if (mistakesBox) mistakesBox.style.display = 'block';
+            if (mistakesList) {
+                mistakesList.innerHTML = '';
+                this.geometry.mistakes.forEach(m => {
+                    const item = document.createElement('div');
+                    item.className = 'mistake-item';
+                    item.innerHTML = `
+                        <div class="mistake-calc">${m.question}</div>
+                        <div class="mistake-explain">Tua risposta: <span style="color:#ef4444;text-decoration:line-through;">${m.given}</span> • Risposta esatta: <strong style="color:#10b981;">${m.correct}</strong></div>
+                        <div class="mistake-sub-explain" style="font-size:0.85rem;color:var(--text-muted);margin-top:4px;">💡 ${m.explanation}</div>
+                    `;
+                    mistakesList.appendChild(item);
+                });
+            }
+        } else {
+            if (mistakesBox) mistakesBox.style.display = 'none';
+        }
+
+        // Salva statistiche generali
+        this.saveData.totalSolved = (this.saveData.totalSolved || 0) + correct;
+        this.saveData.totalErrors = (this.saveData.totalErrors || 0) + this.geometry.wrongCount;
+        this.saveGame();
+        this.updateHeaderStats();
     }
 
     showToastNotification(text) {
